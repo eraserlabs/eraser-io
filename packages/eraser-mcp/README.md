@@ -1,8 +1,8 @@
-# @eraserlabs/eraser-mcp
+# Eraser MCP Server
 
-MCP (Model Context Protocol) server for generating diagrams with [eraser.io](https://eraser.io/?r=0).
+Model Context Protocol (MCP) server for generating diagrams with [Eraser](https://eraser.io).
 
-## Installation
+## Quick Start
 
 ```bash
 npx @eraserlabs/eraser-mcp
@@ -48,19 +48,28 @@ Add to your Claude Desktop config:
 
 ## Environment Variables
 
-- `ERASER_API_TOKEN` (required) - Your Eraser API token
-- `ERASER_API_URL` (optional) - Custom API URL (defaults to `https://app.eraser.io/api/mcp`)
-- `ERASER_OUTPUT_DIR` (optional) - Local directory to save rendered diagrams (defaults to `.eraser/scratchpad`)
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ERASER_API_TOKEN` | Yes | Your Eraser API token |
+| `ERASER_API_URL` | No | Custom API URL (default: `https://app.eraser.io/api/mcp`) |
+| `ERASER_OUTPUT_DIR` | No | Directory to save rendered diagrams (default: `.eraser/scratchpad`) |
 
 ## Available Tools
 
-- `renderSequenceDiagram` - Render sequence diagrams
-- `renderEntityRelationshipDiagram` - Render ERD diagrams
-- `renderCloudArchitectureDiagram` - Render cloud architecture diagrams
-- `renderFlowchart` - Render flowcharts
-- `renderBpmnDiagram` - Render BPMN diagrams
-- `renderPrompt` - Generate diagrams from natural language using AI
-- `renderElements` - Render multiple diagram elements
+| Tool | Description |
+|------|-------------|
+| `renderSequenceDiagram` | Render sequence diagrams |
+| `renderEntityRelationshipDiagram` | Render ERD diagrams |
+| `renderCloudArchitectureDiagram` | Render cloud architecture diagrams |
+| `renderFlowchart` | Render flowcharts |
+| `renderBpmnDiagram` | Render BPMN diagrams |
+| `renderPrompt` | Generate diagrams from natural language using AI |
+| `renderElements` | Render multiple diagram elements |
+
+## Documentation
+
+- [Eraser API Documentation](https://docs.eraser.io)
+- [Get an API Token](https://docs.eraser.io/reference/api-token)
 
 ## License
 

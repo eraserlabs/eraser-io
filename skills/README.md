@@ -1,0 +1,77 @@
+# Eraser Skills
+
+Agent skills for AI coding assistants to generate architecture diagrams from code, infrastructure, or descriptions.
+
+## Quick Start
+
+### Claude Code
+
+Add to your project's skills directory:
+
+```bash
+mkdir -p .claude/skills/eraser-diagram
+curl -o .claude/skills/eraser-diagram/SKILL.md https://raw.githubusercontent.com/eraserlabs/eraserio/main/skills/eraser-diagram/SKILL.md
+```
+
+### Cursor
+
+Copy the skill to your project's Cursor rules:
+
+```bash
+curl -o .cursor/rules/eraser-diagram.mdc https://raw.githubusercontent.com/eraserlabs/eraserio/main/skills/eraser-diagram/SKILL.md
+```
+
+Or manually copy the contents of [`eraser-diagram/SKILL.md`](eraser-diagram/SKILL.md) to `.cursor/rules/eraser-diagram.mdc`.
+
+### Other AI Assistants
+
+Download the [`SKILL.md`](eraser-diagram/SKILL.md) file and include it in your assistant's context or system prompt.
+
+## Available Skills
+
+| Skill | Description | Use Case |
+|-------|-------------|----------|
+| [eraser-diagram](eraser-diagram/) | Core diagram generation | General purpose - works with any code or description |
+| [terraform-diagram](terraform-diagram/) | Terraform visualization | Generate diagrams from `.tf` files |
+| [aws-diagram](aws-diagram/) | AWS infrastructure | Visualize AWS resources from CLI or CloudFormation |
+| [azure-diagram](azure-diagram/) | Azure resources | Generate diagrams from ARM templates or Azure CLI |
+| [bicep-diagram](bicep-diagram/) | Azure Bicep | Create diagrams from Bicep files |
+
+## Features
+
+- **Zero Configuration** - Works out of the box, no API key required for free tier
+- **Multiple Formats** - Cloud architecture, sequence diagrams, ER diagrams, flowcharts, and more
+- **Editable Output** - Get an Eraser link to edit diagrams manually or with AI
+- **Free Tier** - Generate watermarked diagrams without an API key
+- **Paid Tier** - Remove watermarks and get high-resolution output
+
+## Configuration (Optional)
+
+For watermark-free, high-resolution diagrams:
+
+1. Get your API key from the [Eraser documentation](https://docs.eraser.io/reference/api-token)
+
+2. Add to a `.env` file in your project root:
+
+   ```bash
+   ERASER_API_KEY=your_key_here
+   ERASER_THEME=dark   # or "light" (default: dark)
+   ```
+
+   Or set as environment variables:
+
+   ```bash
+   export ERASER_API_KEY=your_key_here
+   export ERASER_THEME=dark
+   ```
+
+3. The skill will automatically detect and use your settings
+
+## Documentation
+
+- [Eraser API Documentation](https://docs.eraser.io)
+- [Get an API Token](https://docs.eraser.io/reference/api-token)
+
+## License
+
+MIT - see [LICENSE](../LICENSE) for details.

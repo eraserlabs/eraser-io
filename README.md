@@ -1,22 +1,30 @@
-# Eraser.io Public Packages
+# Eraser
 
-This repository contains public packages for [eraser.io](https://eraser.io/?r=0).
+Open-source tools for generating diagrams with [Eraser](https://eraser.io).
 
-## Packages
+⭐ If you find this useful, give us a star!
 
-| Package | Description |
-|---------|-------------|
-| [@eraserlabs/eraser-mcp](./packages/eraser-mcp) | MCP server for generating diagrams |
+## What's Here
 
-## Development
+| Resource | Description |
+|----------|-------------|
+| [MCP Server](./packages/eraser-mcp) | Model Context Protocol server for AI assistants |
+| [Skills](./skills) | Agent skills for Claude Code, Cursor, and other AI assistants |
 
-Each package is self-contained. To work on a package:
+## Quick Start
 
-```bash
-cd packages/eraser-mcp
-npm install
-npm run build
-```
+**For AI Coding Assistants (Claude Code, Cursor):**
+
+See the [Skills README](./skills/README.md) for installation instructions.
+
+**For MCP Integration:**
+
+See the [MCP README](./packages/eraser-mcp/README.md) for setup.
+
+## Documentation
+
+- [Eraser API Documentation](https://docs.eraser.io)
+- [Get an API Token](https://docs.eraser.io/reference/api-token)
 
 ## License
 

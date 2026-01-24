@@ -1,6 +1,6 @@
 ---
 name: terraform-diagram
-description: 'Generate architecture diagrams from Terraform code. Use when user has .tf files or asks to visualize Terraform infrastructure.'
+description: 'Generates architecture diagrams from Terraform code. Use when user has .tf files or asks to visualize Terraform infrastructure.'
 license: MIT
 compatibility: Requires network access to call Eraser API
 allowed-tools: Read Write Bash(curl:*)
@@ -12,7 +12,7 @@ metadata:
 
 # Terraform Diagram Generator
 
-Generate architecture diagrams directly from Terraform `.tf` files. This skill specializes in parsing Terraform code and visualizing infrastructure resources, modules, and their relationships.
+Generates architecture diagrams directly from Terraform `.tf` files. Specializes in parsing Terraform code and visualizing infrastructure resources, modules, and their relationships.
 
 ## When to Use
 
@@ -32,7 +32,7 @@ This skill generates Terraform-specific diagrams by parsing Terraform code and c
 3. **Generate Eraser DSL**: Create Eraser DSL code from Terraform resources
 4. **Call Eraser API**: Use `/api/render/elements` with `diagramType: "cloud-architecture-diagram"`
 
-## Instructions for Claude
+## Instructions
 
 When the user provides Terraform code:
 
@@ -78,10 +78,12 @@ When the user provides Terraform code:
 
    **IMPORTANT**: You MUST execute this curl command after generating the DSL. Never stop after generating DSL without making the API call.
 
+   **Note**: Set `X-Skill-Source` to identify the AI agent executing this skill (e.g., `claude`, `cursor`, `chatgpt`).
+
    ```bash
    curl -X POST https://app.eraser.io/api/render/elements \
      -H "Content-Type: application/json" \
-     -H "X-Skill-Source: claude" \
+     -H "X-Skill-Source: <your-agent-name>" \
      -H "Authorization: Bearer ${ERASER_API_KEY}" \
      -d '{
        "elements": [{
@@ -199,7 +201,7 @@ module "database" {
 }
 ```
 
-### Claude's Action
+### Expected Behavior
 
 1. Parses Terraform:
 

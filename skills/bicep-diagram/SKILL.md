@@ -1,6 +1,6 @@
 ---
 name: bicep-diagram
-description: 'Generate architecture diagrams from Azure Bicep files. Use when user has .bicep files or asks to visualize Bicep infrastructure.'
+description: 'Generates architecture diagrams from Azure Bicep files. Use when user has .bicep files or asks to visualize Bicep infrastructure.'
 license: MIT
 compatibility: Requires network access to call Eraser API
 allowed-tools: Read Write Bash(curl:*)
@@ -12,7 +12,7 @@ metadata:
 
 # Bicep Diagram Generator
 
-Generate architecture diagrams directly from Azure Bicep files. Bicep is a domain-specific language (DSL) for deploying Azure resources declaratively.
+Generates architecture diagrams directly from Azure Bicep files. Bicep is a domain-specific language (DSL) for deploying Azure resources declaratively.
 
 ## When to Use
 
@@ -32,7 +32,7 @@ This skill generates Bicep-specific diagrams by parsing Bicep code and calling t
 3. **Generate Eraser DSL**: Create Eraser DSL code from Bicep resources
 4. **Call Eraser API**: Use `/api/render/elements` with `diagramType: "cloud-architecture-diagram"`
 
-## Instructions for Claude
+## Instructions
 
 When the user provides Bicep code:
 
@@ -79,10 +79,12 @@ When the user provides Bicep code:
 
    **IMPORTANT**: You MUST execute this curl command after generating the DSL. Never stop after generating DSL without making the API call.
 
+   **Note**: Set `X-Skill-Source` to identify the AI agent executing this skill (e.g., `claude`, `cursor`, `chatgpt`).
+
    ```bash
    curl -X POST https://app.eraser.io/api/render/elements \
      -H "Content-Type: application/json" \
-     -H "X-Skill-Source: claude" \
+     -H "X-Skill-Source: <your-agent-name>" \
      -H "Authorization: Bearer ${ERASER_API_KEY}" \
      -d '{
        "elements": [{
@@ -215,7 +217,7 @@ module storageModule './modules/storage.bicep' = {
 }
 ```
 
-### Claude's Action
+### Expected Behavior
 
 1. Parses Bicep:
 

@@ -1,6 +1,6 @@
 ---
 name: azure-diagram
-description: 'Visualize Azure infrastructure from ARM templates, Azure CLI, or descriptions. Use when user has Azure resources to diagram.'
+description: 'Visualizes Azure infrastructure from ARM templates, Azure CLI, or descriptions. Use when user has Azure resources to diagram.'
 license: MIT
 compatibility: Requires network access to call Eraser API
 allowed-tools: Read Write Bash(curl:*)
@@ -12,7 +12,7 @@ metadata:
 
 # Azure Diagram Generator
 
-Generate architecture diagrams for Azure infrastructure from ARM templates, Azure CLI output, or natural language descriptions.
+Generates architecture diagrams for Azure infrastructure from ARM templates, Azure CLI output, or natural language descriptions.
 
 ## When to Use
 
@@ -33,7 +33,7 @@ This skill generates Azure-specific diagrams by parsing Azure resources and call
 3. **Generate Eraser DSL**: Create Eraser DSL code from Azure resources
 4. **Call Eraser API**: Use `/api/render/elements` with `diagramType: "cloud-architecture-diagram"`
 
-## Instructions for Claude
+## Instructions
 
 When the user provides Azure infrastructure information:
 
@@ -91,10 +91,12 @@ When the user provides Azure infrastructure information:
 
    **IMPORTANT**: You MUST execute this curl command after generating the DSL. Never stop after generating DSL without making the API call.
 
+   **Note**: Set `X-Skill-Source` to identify the AI agent executing this skill (e.g., `claude`, `cursor`, `chatgpt`).
+
    ```bash
    curl -X POST https://app.eraser.io/api/render/elements \
      -H "Content-Type: application/json" \
-     -H "X-Skill-Source: claude" \
+     -H "X-Skill-Source: <your-agent-name>" \
      -H "Authorization: Bearer ${ERASER_API_KEY}" \
      -d '{
        "elements": [{
@@ -227,7 +229,7 @@ When the user provides Azure infrastructure information:
 }
 ```
 
-### Claude's Action
+### Expected Behavior
 
 1. Parses ARM template:
 
@@ -268,7 +270,7 @@ User runs: az vm list --output json
 Provides JSON output
 ```
 
-### Claude's Action
+### Expected Behavior
 
 1. Parses JSON to extract:
 

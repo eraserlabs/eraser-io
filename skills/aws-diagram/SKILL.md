@@ -1,6 +1,6 @@
 ---
 name: aws-diagram
-description: 'Visualize AWS infrastructure from CLI output, CloudFormation, or descriptions. Use when user has AWS resources to diagram.'
+description: 'Visualizes AWS infrastructure from CLI output, CloudFormation, or descriptions. Use when user has AWS resources to diagram.'
 license: MIT
 compatibility: Requires network access to call Eraser API
 allowed-tools: Read Write Bash(curl:*)
@@ -12,7 +12,7 @@ metadata:
 
 # AWS Diagram Generator
 
-Generate architecture diagrams for AWS infrastructure from CloudFormation templates, AWS CLI output, or natural language descriptions.
+Generates architecture diagrams for AWS infrastructure from CloudFormation templates, AWS CLI output, or natural language descriptions.
 
 ## When to Use
 
@@ -33,7 +33,7 @@ This skill generates AWS-specific diagrams by parsing AWS resources and calling 
 3. **Generate Eraser DSL**: Create Eraser DSL code from AWS resources
 4. **Call Eraser API**: Use `/api/render/elements` with `diagramType: "cloud-architecture-diagram"`
 
-## Instructions for Claude
+## Instructions
 
 When the user provides AWS infrastructure information:
 
@@ -93,10 +93,12 @@ When the user provides AWS infrastructure information:
 
    **IMPORTANT**: You MUST execute this curl command after generating the DSL. Never stop after generating DSL without making the API call.
 
+   **Note**: Set `X-Skill-Source` to identify the AI agent executing this skill (e.g., `claude`, `cursor`, `chatgpt`).
+
    ```bash
    curl -X POST https://app.eraser.io/api/render/elements \
      -H "Content-Type: application/json" \
-     -H "X-Skill-Source: claude" \
+     -H "X-Skill-Source: <your-agent-name>" \
      -H "Authorization: Bearer ${ERASER_API_KEY}" \
      -d '{
        "elements": [{
@@ -211,7 +213,7 @@ Resources:
       DBInstanceClass: db.t3.micro
 ```
 
-### Claude's Action
+### Expected Behavior
 
 1. Parses CloudFormation:
 
@@ -251,7 +253,7 @@ User runs: aws ec2 describe-instances
 Provides JSON output
 ```
 
-### Claude's Action
+### Expected Behavior
 
 1. Parses JSON to extract:
 

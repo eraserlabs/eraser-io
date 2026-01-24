@@ -1,6 +1,6 @@
 ---
 name: eraser-diagram
-description: 'Generate architecture diagrams from code, infrastructure, or descriptions. Use when user asks to visualize, diagram, or document system architecture.'
+description: 'Generates architecture diagrams from code, infrastructure, or descriptions. Use when user asks to visualize, diagram, or document system architecture.'
 license: MIT
 compatibility: Requires network access to call Eraser API
 allowed-tools: Read Write Bash(curl:*)
@@ -12,7 +12,7 @@ metadata:
 
 # Eraser Diagram Generator
 
-Generate professional architecture diagrams directly from code, infrastructure files, or natural language descriptions. This skill enables Claude to create visual diagrams using the Eraser API.
+Generates professional architecture diagrams directly from code, infrastructure files, or natural language descriptions using the Eraser API.
 
 ## When to Use
 
@@ -39,8 +39,10 @@ Activate this skill when:
 POST https://app.eraser.io/api/render/elements
 Content-Type: application/json
 Authorization: Bearer ${ERASER_API_KEY}
-X-Skill-Source: claude
+X-Skill-Source: <your-agent-name>
 ```
+
+**Note**: Set `X-Skill-Source` to identify the AI agent executing this skill (e.g., `claude`, `cursor`, `chatgpt`).
 
 ### Diagram Types
 
@@ -91,7 +93,7 @@ Available `diagramType` values:
 - Ensure `diagramType` matches the DSL content (e.g., sequence DSL with `sequence-diagram`)
 - For auth errors, verify the API key is set correctly as an environment variable
 
-## Instructions for Claude
+## Instructions
 
 When the user requests a diagram:
 
@@ -157,10 +159,12 @@ When the user requests a diagram:
 
    **IMPORTANT**: You MUST execute this curl command after generating the DSL. Never stop after generating DSL without making the API call.
 
+   **Note**: Set `X-Skill-Source` to identify the AI agent executing this skill (e.g., `claude`, `cursor`, `chatgpt`).
+
    ```bash
    curl -X POST https://app.eraser.io/api/render/elements \
      -H "Content-Type: application/json" \
-     -H "X-Skill-Source: claude" \
+     -H "X-Skill-Source: <your-agent-name>" \
      -H "Authorization: Bearer ${ERASER_API_KEY}" \
      -d '{
        "elements": [{
@@ -321,7 +325,7 @@ User -> Order
 - **Group Related Items**: Use containers (VPCs, modules) to group related components
 - **Specify Connections**: Show data flows, dependencies, and relationships
 - **Handle Large Systems**: Break down very large systems into focused diagrams
-- **Include Source Header**: Always include `X-Skill-Source: claude` header
+- **Include Source Header**: Always include `X-Skill-Source` header with your agent name
 
 ## Examples
 
@@ -333,7 +337,7 @@ User -> Order
 I have a web app with a load balancer, 3 EC2 instances, and an RDS database
 ```
 
-**Claude's Action:**
+**Expected Behavior:**
 
 1. Generates DSL:
 
@@ -377,7 +381,7 @@ resource "aws_instance" "web" {
 }
 ```
 
-**Claude's Action:**
+**Expected Behavior:**
 
 1. Parse Terraform to identify resources
 2. Extract relationships (subnets in VPC, EC2 in subnet, etc.)
@@ -400,7 +404,7 @@ resource "aws_instance" "web" {
 Show the flow: User -> API Gateway -> Lambda -> DynamoDB
 ```
 
-**Claude's Action:**
+**Expected Behavior:**
 
 1. Generates DSL:
 
@@ -427,4 +431,4 @@ If the user has set `ERASER_API_KEY`, use it in the Authorization header for wat
 - URLs use a secure `requestId` + `state` pattern, making them short and reliable even for large diagrams
 - The DSL code can be used to regenerate or modify diagrams
 - API responses are cached, so identical requests return quickly
-- Always include `X-Skill-Source: claude` header to help track usage
+- Always include `X-Skill-Source` header with your agent name to help track usage

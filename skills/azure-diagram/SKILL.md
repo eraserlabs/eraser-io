@@ -288,6 +288,6 @@ Provides JSON output
 
 ## Related Skills
 
-- [`eraser-diagram`](../eraser-diagram/) - Core diagram generation skill
+- [`eraser-diagrams`](../eraser-diagrams/) - Core diagram generation skill
 - [`terraform-diagram`](../terraform-diagram/) - For Terraform-managed Azure
 - [`bicep-diagram`](../bicep-diagram/) - For Azure Bicep files

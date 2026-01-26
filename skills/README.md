@@ -9,8 +9,8 @@ Agent skills for AI coding assistants to generate architecture diagrams from cod
 Add to your project's skills directory:
 
 ```bash
-mkdir -p .claude/skills/eraser-diagram
-curl -o .claude/skills/eraser-diagram/SKILL.md https://raw.githubusercontent.com/eraserlabs/eraserio/main/skills/eraser-diagram/SKILL.md
+mkdir -p .claude/skills/eraser-diagrams
+curl -o .claude/skills/eraser-diagrams/SKILL.md https://raw.githubusercontent.com/eraserlabs/eraserio/main/skills/eraser-diagrams/SKILL.md
 ```
 
 ### Cursor
@@ -18,20 +18,20 @@ curl -o .claude/skills/eraser-diagram/SKILL.md https://raw.githubusercontent.com
 Copy the skill to your project's Cursor rules:
 
 ```bash
-curl -o .cursor/rules/eraser-diagram.mdc https://raw.githubusercontent.com/eraserlabs/eraserio/main/skills/eraser-diagram/SKILL.md
+curl -o .cursor/rules/eraser-diagrams.mdc https://raw.githubusercontent.com/eraserlabs/eraserio/main/skills/eraser-diagrams/SKILL.md
 ```
 
-Or manually copy the contents of [`eraser-diagram/SKILL.md`](eraser-diagram/SKILL.md) to `.cursor/rules/eraser-diagram.mdc`.
+Or manually copy the contents of [`eraser-diagrams/SKILL.md`](eraser-diagrams/SKILL.md) to `.cursor/rules/eraser-diagrams.mdc`.
 
 ### Other AI Assistants
 
-Download the [`SKILL.md`](eraser-diagram/SKILL.md) file and include it in your assistant's context or system prompt.
+Download the [`SKILL.md`](eraser-diagrams/SKILL.md) file and include it in your assistant's context or system prompt.
 
 ## Available Skills
 
 | Skill | Description | Use Case |
 |-------|-------------|----------|
-| [eraser-diagram](eraser-diagram/) | Core diagram generation | General purpose - works with any code or description |
+| [eraser-diagrams](eraser-diagrams/) | Core diagram generation | General purpose - works with any code or description |
 | [terraform-diagram](terraform-diagram/) | Terraform visualization | Generate diagrams from `.tf` files |
 | [aws-diagram](aws-diagram/) | AWS infrastructure | Visualize AWS resources from CLI or CloudFormation |
 | [azure-diagram](azure-diagram/) | Azure resources | Generate diagrams from ARM templates or Azure CLI |

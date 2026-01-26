@@ -1,5 +1,5 @@
 ---
-name: eraser-diagram
+name: eraser-diagrams
 description: 'Generates architecture diagrams from code, infrastructure, or descriptions. Use when user asks to visualize, diagram, or document system architecture.'
 license: MIT
 compatibility: Requires network access to call Eraser API

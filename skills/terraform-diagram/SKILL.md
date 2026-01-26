@@ -252,6 +252,6 @@ User receives a diagram showing:
 
 ## Related Skills
 
-- [`eraser-diagram`](../eraser-diagram/) - Core diagram generation skill
+- [`eraser-diagrams`](../eraser-diagrams/) - Core diagram generation skill
 - [`aws-diagram`](../aws-diagram/) - For AWS-specific visualizations
 - [`azure-diagram`](../azure-diagram/) - For Azure-specific visualizations

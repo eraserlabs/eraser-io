@@ -264,6 +264,6 @@ User receives a diagram showing:
 
 ## Related Skills
 
-- [`eraser-diagram`](../eraser-diagram/) - Core diagram generation skill
+- [`eraser-diagrams`](../eraser-diagrams/) - Core diagram generation skill
 - [`azure-diagram`](../azure-diagram/) - For ARM templates and Azure CLI
 - [`terraform-diagram`](../terraform-diagram/) - For Terraform-managed Azure

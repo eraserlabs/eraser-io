@@ -1,5 +1,5 @@
 ---
-name: aws-diagram
+name: aws-diagrams
 description: 'Visualizes AWS infrastructure from CLI output, CloudFormation, or descriptions. Use when user has AWS resources to diagram.'
 license: MIT
 compatibility: Requires network access to call Eraser API
@@ -113,7 +113,8 @@ When the user provides AWS infrastructure information:
          "diagramType": "cloud-architecture-diagram"
        }],
        "scale": 2,
-       "theme": "${ERASER_THEME:-dark}"
+        "theme": "${ERASER_THEME:-dark}",
+       "background": true
      }'
    ```
 
@@ -268,8 +269,3 @@ Provides JSON output
    - Tags
 
 2. Formats and calls API
-
-## Related Skills
-
-- [`eraser-diagrams`](../eraser-diagrams/) - Core diagram generation skill
-- [`terraform-diagram`](../terraform-diagram/) - For Terraform-managed AWS

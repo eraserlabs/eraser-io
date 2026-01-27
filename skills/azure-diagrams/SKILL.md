@@ -1,5 +1,5 @@
 ---
-name: azure-diagram
+name: azure-diagrams
 description: 'Visualizes Azure infrastructure from ARM templates, Azure CLI, or descriptions. Use when user has Azure resources to diagram.'
 license: MIT
 compatibility: Requires network access to call Eraser API
@@ -111,7 +111,8 @@ When the user provides Azure infrastructure information:
          "diagramType": "cloud-architecture-diagram"
        }],
        "scale": 2,
-       "theme": "${ERASER_THEME:-dark}"
+       "theme": "${ERASER_THEME:-dark}",
+       "background": true
      }'
    ```
 
@@ -285,9 +286,3 @@ Provides JSON output
    - Storage accounts
 
 2. Formats and calls API
-
-## Related Skills
-
-- [`eraser-diagrams`](../eraser-diagrams/) - Core diagram generation skill
-- [`terraform-diagram`](../terraform-diagram/) - For Terraform-managed Azure
-- [`bicep-diagram`](../bicep-diagram/) - For Azure Bicep files

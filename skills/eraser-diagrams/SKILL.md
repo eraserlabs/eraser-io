@@ -31,6 +31,62 @@ Activate this skill when:
 3. **Call the Eraser API**: Make an HTTP POST request to render the diagram
 4. **Return the result**: Present the image URL and editor link to the user
 
+## Diagram Types and Syntax
+
+Eraser supports five types of diagrams, each optimized for different use cases. For detailed DSL syntax and examples, refer to the appropriate reference file:
+
+### Flow Charts
+
+Visualize process flows, user flows, and logic flows represented as nodes, groups, and relationships. Diagrams are created using simple syntax.
+
+**Use for**: Process flows, user journeys, decision trees, business process documentation
+
+**diagramType**: `"flowchart-diagram"`
+
+**Reference**: [Flowchart Syntax](references/flowchart-syntax.md)
+
+### Entity Relationship Diagrams (ERD)
+
+Visualize data models represented as entities, attributes, and relationships. Diagrams are created using simple syntax.
+
+**Use for**: Database schema design, data modeling, understanding entity relationships, documenting data structures
+
+**diagramType**: `"entity-relationship-diagram"`
+
+**Reference**: [ERD Syntax](references/erd-syntax.md)
+
+### Cloud Architecture Diagrams
+
+Visualize cloud infrastructure represented as nodes, groups, and connections. Diagrams are created using simple syntax.
+
+**Use for**: Cloud infrastructure visualization, AWS/Azure/GCP architectures, system architecture documentation, data flow visualization
+
+**diagramType**: `"cloud-architecture-diagram"`
+
+**Reference**: [Architecture Syntax](references/architecture-syntax.md)
+
+### Sequence Diagrams
+
+Visualize system flows using sequence diagrams. Each vertical column represents an entity (e.g. user, server, DB) and arrows between the columns represent the flow of information or requests. Diagrams are created using simple syntax.
+
+**Use for**: API request/response flows, system interactions, user workflows, message passing between services, process flows over time
+
+**diagramType**: `"sequence-diagram"`
+
+**Reference**: [Sequence Syntax](references/sequence-syntax.md)
+
+### BPMN Diagrams (Swimlane Diagrams)
+
+Visualize business processes represented as pools, lanes, and flow objects such as tasks, events, and gateways. Diagrams are created using simple syntax.
+
+**Use for**: Business process documentation, workflow visualization, process improvement, cross-functional processes, swimlane diagrams showing roles/responsibilities
+
+**diagramType**: `"bpmn-diagram"`
+
+**Reference**: [BPMN Syntax](references/bpmn-syntax.md)
+
+Each reference file contains complete syntax documentation, property references, and practical examples.
+
 ## API Integration
 
 ### Endpoint
@@ -42,17 +98,12 @@ Authorization: Bearer ${ERASER_API_KEY}
 X-Skill-Source: eraser-skill
 ```
 
-**Note**: The `X-Skill-Source` header identifies the AI agent. Replace `eraser-skill` with your agent name (see instructions below).
-
-### Diagram Types
-
-Available `diagramType` values:
-
-- `"cloud-architecture-diagram"` - For infrastructure, AWS, Azure, GCP diagrams
-- `"sequence-diagram"` - For sequence/interaction diagrams
-- `"entity-relationship-diagram"` - For database/ER diagrams
-- `"flowchart-diagram"` - For process flows
-- `"bpmn-diagram"` - For BPMN process diagrams
+**Note**: The `X-Skill-Source` header identifies the AI agent. You MUST replace `eraser-skill` with your actual agent name:
+- If you are Claude (Anthropic), use: `claude`
+- If you are running in Cursor, use: `cursor`
+- If you are ChatGPT (OpenAI), use: `chatgpt`
+- If you are Gemini (Google), use: `gemini`
+- Otherwise, use your model/agent name in lowercase
 
 ### Response Format
 
@@ -63,8 +114,6 @@ Available `diagramType` values:
   "renderedElements": [...]
 }
 ```
-
-**Note**: `createEraserFileUrl` is now always returned, regardless of whether an API token is provided. The URL uses a short `requestId` and `state` format instead of base64-encoded data, making it more reliable for large diagrams.
 
 ### Error Responses
 
@@ -110,42 +159,7 @@ When the user requests a diagram:
      - Labels MUST be on a single line - NEVER use newlines inside label attributes
      - Keep labels simple and readable - prefer separate labels over concatenating too much metadata
      - Format DSL with proper line breaks (one node/group per line, but labels stay on single lines)
-   - For cloud architecture diagrams, use this syntax:
-     ```
-     main-vpc [label: VPC] {
-       public-subnet [label: "Public Subnet"] {
-         web-server [icon: aws-ec2, label: "Web Server"]
-         load-balancer [icon: aws-elb]
-       }
-       private-subnet [label: "Private Subnet"] {
-         database [icon: aws-rds]
-       }
-     }
-     load-balancer -> web-server
-     web-server -> database
-     ```
-   - For sequence diagrams, use:
-     ```
-     title User Login Flow
-     User > API: POST /login
-     API > Database: Query user
-     Database > API: Return user data
-     API > User: Return JWT token
-     ```
-   - For ER diagrams, use:
-     ```
-     User {
-       id: int
-       name: string
-       email: string
-     }
-     Order {
-       id: int
-       userId: int
-       total: decimal
-     }
-     User -> Order
-     ```
+   - For detailed DSL syntax and examples, see the [Diagram Types and Syntax](#diagram-types-and-syntax) section above for links to reference files
 
 3. **Create Element Definition**
 
@@ -159,12 +173,7 @@ When the user requests a diagram:
 
    **IMPORTANT**: You MUST execute this curl command after generating the DSL. Never stop after generating DSL without making the API call.
 
-   **CRITICAL**: In the `X-Skill-Source` header below, you MUST replace the value with your AI agent name:
-   - If you are Claude (Anthropic), use: `claude`
-   - If you are running in Cursor, use: `cursor`
-   - If you are ChatGPT (OpenAI), use: `chatgpt`
-   - If you are Gemini (Google), use: `gemini`
-   - Otherwise, use your model/agent name in lowercase
+   **CRITICAL**: Replace `eraser-skill` in the `X-Skill-Source` header with your actual AI agent name (see API Integration section above for values).
 
    ```bash
    curl -X POST https://app.eraser.io/api/render/elements \
@@ -178,9 +187,10 @@ When the user requests a diagram:
          "code": "<your generated DSL>",
          "diagramType": "cloud-architecture-diagram"
        }],
-       "scale": 2,
-       "theme": "${ERASER_THEME:-dark}"
-     }'
+"scale": 2,
+      "theme": "${ERASER_THEME:-dark}",
+      "background": true
+    }'
    ```
 
 5. **Track Sources During Analysis**
@@ -239,86 +249,6 @@ When the user requests a diagram:
    - Suggest checking API key if authentication fails
    - Offer to regenerate DSL code as fallback
 
-## Eraser DSL Syntax Guide
-
-### Cloud Architecture Diagrams
-
-**Basic Syntax:**
-
-- Nodes: `node-name [icon: aws-ec2, label: "Display Name"]`
-- Groups/Containers: `group-name [label: VPC] { ... }` or `group-name [label: "My VPC"] { ... }`
-- Connections: `node-name-1 -> node-name-2` or `node-name-1 <-> node-name-2`
-- Node names are unique identifiers (like variable names, no spaces or special chars)
-- Icons set via `[icon: aws-ec2]` property
-- Labels set via `[label: ...]` property:
-  - Simple labels: `[label: VPC]` (no quotes needed)
-  - Labels with spaces: `[label: "Public Subnet"]` (quotes required)
-  - Labels with special chars: `[label: "Subnet (10.0.1.0/24)"]` (quotes required)
-  - Labels with metadata: `[label: "VPC 10.0.0.0/16"]` (all on one line, quoted)
-  - **NEVER** split labels across lines: ❌ `[label: VPC\n10.0.0.0/16]` ✅ `[label: "VPC 10.0.0.0/16"]`
-- **Formatting**: Each node/group/connection on its own line for readability, but labels must be single-line
-- Connections reference node names, not icon types
-
-**Example:**
-
-```
-main-vpc [label: VPC] {
-  public-subnet {
-    web-server [icon: aws-ec2]
-    load-balancer [icon: aws-elb]
-  }
-  private-subnet {
-    database [icon: aws-rds]
-    cache [icon: aws-elasticache]
-  }
-}
-load-balancer -> web-server
-web-server -> database
-```
-
-### Sequence Diagrams
-
-**Basic Syntax:**
-
-- Actors: `ActorName` (one per line or inline)
-- Messages: `Actor1 > Actor2: message text`
-- Blocks: `alt [label] { ... }`, `loop [label] { ... }`, etc.
-
-**Example:**
-
-```
-title API Request Flow
-Client > API Gateway: POST /api/users
-API Gateway > Lambda: Invoke function
-Lambda > DynamoDB: Query users
-DynamoDB > Lambda: Return results
-Lambda > API Gateway: Return response
-API Gateway > Client: 200 OK
-```
-
-### Entity Relationship Diagrams
-
-**Basic Syntax:**
-
-- Entities: `EntityName { field: type }`
-- Relationships: `Entity1 -> Entity2`
-
-**Example:**
-
-```
-User {
-  id: int
-  name: string
-  email: string
-}
-Order {
-  id: int
-  userId: int
-  total: decimal
-}
-User -> Order
-```
-
 ## Best Practices
 
 - **Generate Valid DSL**: Ensure the DSL syntax is correct before calling the API
@@ -332,108 +262,9 @@ User -> Order
 - **Handle Large Systems**: Break down very large systems into focused diagrams
 - **Include Source Header**: Always include `X-Skill-Source` header with your AI agent name (claude, cursor, chatgpt, etc.)
 
-## Examples
-
-### Example 1: Simple Infrastructure
-
-**User Input:**
-
-```
-I have a web app with a load balancer, 3 EC2 instances, and an RDS database
-```
-
-**Expected Behavior:**
-
-1. Generates DSL:
-
-   ```
-   main-vpc [label: VPC] {
-     public-subnet {
-       load-balancer [icon: aws-elb]
-       web-server-1 [icon: aws-ec2]
-       web-server-2 [icon: aws-ec2]
-       web-server-3 [icon: aws-ec2]
-     }
-     private-subnet {
-       database [icon: aws-rds]
-     }
-   }
-   load-balancer -> web-server-1, web-server-2, web-server-3
-   web-server-1 -> database
-   web-server-2 -> database
-   web-server-3 -> database
-   ```
-
-2. Calls API with `diagramType: "cloud-architecture-diagram"`
-
-### Example 2: From Terraform Code
-
-**User Input:**
-
-```
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
-}
-
-resource "aws_subnet" "public" {
-  vpc_id = aws_vpc.main.id
-  cidr_block = "10.0.1.0/24"
-}
-
-resource "aws_instance" "web" {
-  subnet_id = aws_subnet.public.id
-  instance_type = "t3.micro"
-}
-```
-
-**Expected Behavior:**
-
-1. Parse Terraform to identify resources
-2. Extract relationships (subnets in VPC, EC2 in subnet, etc.)
-3. Generate DSL code with proper formatting:
-   ```
-   main-vpc [label: "VPC 10.0.0.0/16"] {
-     public-subnet [label: "Public Subnet 10.0.1.0/24"] {
-       web-instance [icon: aws-ec2, label: "Web Instance t3.micro"]
-     }
-   }
-   ```
-   **Important**: All label text must be on a single line within quotes. If including metadata like CIDR blocks or instance types, include them in the same quoted string, separated by spaces.
-4. Call API with `diagramType: "cloud-architecture-diagram"`
-
-### Example 3: Sequence Diagram
-
-**User Input:**
-
-```
-Show the flow: User -> API Gateway -> Lambda -> DynamoDB
-```
-
-**Expected Behavior:**
-
-1. Generates DSL:
-
-   ```
-   title User Request Flow
-   User > API Gateway: Request
-   API Gateway > Lambda: Invoke
-   Lambda > DynamoDB: Query
-   DynamoDB > Lambda: Results
-   Lambda > API Gateway: Response
-   API Gateway > User: Response
-   ```
-
-2. Calls API with `diagramType: "sequence-diagram"`
-
-## Environment Variables
-
-If the user has set `ERASER_API_KEY`, use it in the Authorization header for watermark-free, high-resolution diagrams.
-
 ## Notes
 
 - Free tier diagrams include a watermark but are fully functional
 - The `createEraserFileUrl` is always returned (works for both free and paid tiers) and allows users to edit diagrams in the Eraser web editor
-- URLs use a secure `requestId` + `state` pattern, making them short and reliable even for large diagrams
 - The DSL code can be used to regenerate or modify diagrams
 - API responses are cached, so identical requests return quickly
-- Always include `X-Skill-Source` header with your AI agent name (claude, cursor, chatgpt, etc.) to help track usage

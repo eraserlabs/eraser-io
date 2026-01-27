@@ -1,5 +1,5 @@
 ---
-name: terraform-diagram
+name: terraform-diagrams
 description: 'Generates architecture diagrams from Terraform code. Use when user has .tf files or asks to visualize Terraform infrastructure.'
 license: MIT
 compatibility: Requires network access to call Eraser API
@@ -98,7 +98,8 @@ When the user provides Terraform code:
          "diagramType": "cloud-architecture-diagram"
        }],
        "scale": 2,
-       "theme": "${ERASER_THEME:-dark}"
+       "theme": "${ERASER_THEME:-dark}",
+       "background": true
      }'
    ```
 
@@ -249,9 +250,3 @@ User receives a diagram showing:
 - Public subnet nested inside VPC
 - EC2 instance in the subnet
 - Proper AWS styling
-
-## Related Skills
-
-- [`eraser-diagrams`](../eraser-diagrams/) - Core diagram generation skill
-- [`aws-diagram`](../aws-diagram/) - For AWS-specific visualizations
-- [`azure-diagram`](../azure-diagram/) - For Azure-specific visualizations

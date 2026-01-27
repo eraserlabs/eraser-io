@@ -1,5 +1,5 @@
 ---
-name: bicep-diagram
+name: bicep-diagrams
 description: 'Generates architecture diagrams from Azure Bicep files. Use when user has .bicep files or asks to visualize Bicep infrastructure.'
 license: MIT
 compatibility: Requires network access to call Eraser API
@@ -99,7 +99,8 @@ When the user provides Bicep code:
          "diagramType": "cloud-architecture-diagram"
        }],
        "scale": 2,
-       "theme": "${ERASER_THEME:-dark}"
+       "theme": "${ERASER_THEME:-dark}",
+       "background": true
      }'
    ```
 
@@ -261,9 +262,3 @@ User receives a diagram showing:
 - VM in the subnet
 - Dependency relationship shown
 - Proper Azure styling
-
-## Related Skills
-
-- [`eraser-diagrams`](../eraser-diagrams/) - Core diagram generation skill
-- [`azure-diagram`](../azure-diagram/) - For ARM templates and Azure CLI
-- [`terraform-diagram`](../terraform-diagram/) - For Terraform-managed Azure

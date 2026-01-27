@@ -32,10 +32,10 @@ Download the [`SKILL.md`](eraser-diagrams/SKILL.md) file and include it in your 
 | Skill | Description | Use Case |
 |-------|-------------|----------|
 | [eraser-diagrams](eraser-diagrams/) | Core diagram generation | General purpose - works with any code or description |
-| [terraform-diagram](terraform-diagram/) | Terraform visualization | Generate diagrams from `.tf` files |
-| [aws-diagram](aws-diagram/) | AWS infrastructure | Visualize AWS resources from CLI or CloudFormation |
-| [azure-diagram](azure-diagram/) | Azure resources | Generate diagrams from ARM templates or Azure CLI |
-| [bicep-diagram](bicep-diagram/) | Azure Bicep | Create diagrams from Bicep files |
+| [terraform-diagrams](terraform-diagrams/) | Terraform visualization | Generate diagrams from `.tf` files |
+| [aws-diagrams](aws-diagrams/) | AWS infrastructure | Visualize AWS resources from CLI or CloudFormation |
+| [azure-diagrams](azure-diagrams/) | Azure resources | Generate diagrams from ARM templates or Azure CLI |
+| [bicep-diagrams](bicep-diagrams/) | Azure Bicep | Create diagrams from Bicep files |
 
 ## Features
 

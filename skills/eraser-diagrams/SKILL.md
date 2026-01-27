@@ -187,10 +187,10 @@ When the user requests a diagram:
          "code": "<your generated DSL>",
          "diagramType": "cloud-architecture-diagram"
        }],
-"scale": 2,
-      "theme": "${ERASER_THEME:-dark}",
-      "background": true
-    }'
+       "scale": 2,
+       "theme": "${ERASER_THEME:-dark}",
+       "background": true
+     }'
    ```
 
 5. **Track Sources During Analysis**

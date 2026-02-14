@@ -1,0 +1,27 @@
+{
+  "name": "eraser",
+  "description": "Generate professional architecture diagrams from code, infrastructure files, or natural language descriptions. Supports cloud architecture, sequence diagrams, ERD, flowcharts, and BPMN diagrams. Works with Terraform, AWS, Azure, and other IaC formats.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Eraser Labs",
+    "url": "https://github.com/eraserlabs"
+  },
+  "homepage": "https://github.com/eraserlabs/eraserio",
+  "repository": "https://github.com/eraserlabs/eraserio.git",
+  "license": "MIT",
+  "keywords": [
+    "diagram",
+    "flowchart",
+    "bpmn",
+    "sequence diagram",
+    "entity relationship diagram",
+    "architecture",
+    "visualization",
+    "terraform",
+    "aws",
+    "azure",
+    "bicep",
+    "gcp",
+    "infrastructure"
+  ]
+}

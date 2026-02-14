@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "eraser": {
+      "type": "http",
+      "url": "https://app.eraser.io/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ERASER_API_TOKEN:-}"
+      }
+    }
+  }
+}

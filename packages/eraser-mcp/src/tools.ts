@@ -102,6 +102,27 @@ export function isSingleDiagramTool(name: string): name is keyof typeof singleDi
   return name in singleDiagramTools;
 }
 
+// Free tier tools (no auth required)
+const PAID_TOOL_NAMES = new Set(['createFile', 'renderPrompt']);
+
+const PREFERRED_TOOL_NOTE =
+  '\n\nNote: For rendering multiple diagrams at once, prefer the `renderElements` tool.';
+
+export const freeMcpTools: ReadonlyArray<McpToolDefinition<any>> = mcpTools
+  .filter((tool) => !PAID_TOOL_NAMES.has(tool.name))
+  .map((tool) => ({
+    ...tool,
+    description: isSingleDiagramTool(tool.name)
+      ? tool.description + PREFERRED_TOOL_NOTE
+      : tool.description,
+  }));
+
+export const freeMcpToolMap = new Map(freeMcpTools.map((tool) => [tool.name, tool]));
+
+export function isFreeMcpToolName(name: unknown): name is string {
+  return freeMcpToolMap.has(name as string);
+}
+
 // Re-export types for convenience
 export type {
   RenderPromptInput,

@@ -9,7 +9,6 @@ Open-source tools for generating diagrams with [Eraser](https://eraser.io).
 | Resource | Description |
 |----------|-------------|
 | [MCP Server](./packages/eraser-mcp) | Model Context Protocol server for AI assistants |
-| [Connector](./connector) | Free MCP endpoint for the Anthropic connector directory |
 | [Skills](./skills) | Agent skills for Claude Code, Cursor, and other AI assistants |
 
 ## Quick Start

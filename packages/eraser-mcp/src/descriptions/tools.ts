@@ -8,13 +8,12 @@ export const RENDER_ELEMENTS_DESCRIPTION =
   'Render multiple diagram elements. Advanced use case for rendering multiple diagrams at once.';
 
 export const LIST_FILES_DESCRIPTION =
-  'List files in the workspace with pagination, sorting, and filtering. Returns file metadata (not content). Use getFile to retrieve file content. Supports filtering by folder and author, and sorting by createdAt or updatedAt.';
+  'List files in the workspace with pagination, sorting, and filtering. Returns file metadata (not content). Use getFile to retrieve file content.';
 
 export const GET_FILE_DESCRIPTION =
-  'Get a single file. Includes metadata, markdown, and diagram elements. Use this to read the current state of a file before making updates.';
+  'Get a single file. Includes metadata, markdown content, and diagram elements. Use this to read the current state of a file before making updates.';
 
-export const UPDATE_FILE_DESCRIPTION =
-  'Update an existing file. Can update the metadata and markdown content. Providing markdown fully overrides the existing content.';
+export const UPDATE_FILE_DESCRIPTION = `Update an existing file's metadata and / or document content`;
 
 export const ARCHIVE_FILE_DESCRIPTION =
   'Archive (soft-delete) a file. The file can be restored from the trash in the Eraser UI. This does not permanently delete the file.';

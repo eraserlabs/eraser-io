@@ -6,14 +6,34 @@ import {
   toJsonSchema,
   DiagramElementInput,
 } from './schemas/shared';
-import { createFileSchema, CreateFileInput } from './schemas/createFile';
+import { createFileSchema, CreateFileInput } from './schemas/files';
+import { listFilesSchema, ListFilesInput } from './schemas/files';
+import { getFileSchema, GetFileInput } from './schemas/files';
+import { updateFileSchema, UpdateFileInput } from './schemas/files';
+import { archiveFileSchema, ArchiveFileInput } from './schemas/files';
 import { renderPromptSchema, RenderPromptInput } from './schemas/renderPrompt';
 import { renderElementsSchema, RenderElementsInput } from './schemas/renderElements';
 import { singleDiagramSchema, SingleDiagramInput } from './schemas/singleDiagram';
+import {
+  listDiagramsSchema, ListDiagramsInput,
+  getDiagramSchema, GetDiagramInput,
+  createDiagramSchema, CreateDiagramInput,
+  updateDiagramSchema, UpdateDiagramInput,
+  deleteDiagramSchema, DeleteDiagramInput,
+} from './schemas/diagrams';
 
 // Descriptions
 import {
   CREATE_FILE_DESCRIPTION,
+  LIST_FILES_DESCRIPTION,
+  GET_FILE_DESCRIPTION,
+  UPDATE_FILE_DESCRIPTION,
+  ARCHIVE_FILE_DESCRIPTION,
+  LIST_DIAGRAMS_DESCRIPTION,
+  CREATE_DIAGRAM_DESCRIPTION,
+  GET_DIAGRAM_DESCRIPTION,
+  UPDATE_DIAGRAM_DESCRIPTION,
+  DELETE_DIAGRAM_DESCRIPTION,
   RENDER_PROMPT_DESCRIPTION,
   RENDER_ELEMENTS_DESCRIPTION,
 } from './descriptions/tools';
@@ -31,12 +51,69 @@ export type McpToolDefinition<TInput> = {
 };
 
 export const mcpTools: ReadonlyArray<McpToolDefinition<any>> = [
+  // File CRUD
   {
     name: 'createFile',
     description: CREATE_FILE_DESCRIPTION,
     schema: createFileSchema,
     jsonSchema: toJsonSchema(createFileSchema),
   },
+  {
+    name: 'listFiles',
+    description: LIST_FILES_DESCRIPTION,
+    schema: listFilesSchema,
+    jsonSchema: toJsonSchema(listFilesSchema),
+  },
+  {
+    name: 'getFile',
+    description: GET_FILE_DESCRIPTION,
+    schema: getFileSchema,
+    jsonSchema: toJsonSchema(getFileSchema),
+  },
+  {
+    name: 'updateFile',
+    description: UPDATE_FILE_DESCRIPTION,
+    schema: updateFileSchema,
+    jsonSchema: toJsonSchema(updateFileSchema),
+  },
+  {
+    name: 'archiveFile',
+    description: ARCHIVE_FILE_DESCRIPTION,
+    schema: archiveFileSchema,
+    jsonSchema: toJsonSchema(archiveFileSchema),
+  },
+  // Diagram CRUD
+  {
+    name: 'listDiagrams',
+    description: LIST_DIAGRAMS_DESCRIPTION,
+    schema: listDiagramsSchema,
+    jsonSchema: toJsonSchema(listDiagramsSchema),
+  },
+  {
+    name: 'createDiagram',
+    description: CREATE_DIAGRAM_DESCRIPTION,
+    schema: createDiagramSchema,
+    jsonSchema: toJsonSchema(createDiagramSchema),
+  },
+  {
+    name: 'getDiagram',
+    description: GET_DIAGRAM_DESCRIPTION,
+    schema: getDiagramSchema,
+    jsonSchema: toJsonSchema(getDiagramSchema),
+  },
+  {
+    name: 'updateDiagram',
+    description: UPDATE_DIAGRAM_DESCRIPTION,
+    schema: updateDiagramSchema,
+    jsonSchema: toJsonSchema(updateDiagramSchema),
+  },
+  {
+    name: 'deleteDiagram',
+    description: DELETE_DIAGRAM_DESCRIPTION,
+    schema: deleteDiagramSchema,
+    jsonSchema: toJsonSchema(deleteDiagramSchema),
+  },
+  // Render tools
   {
     name: 'renderPrompt',
     description: RENDER_PROMPT_DESCRIPTION,
@@ -102,8 +179,20 @@ export function isSingleDiagramTool(name: string): name is keyof typeof singleDi
   return name in singleDiagramTools;
 }
 
-// Free tier tools (no auth required)
-const PAID_TOOL_NAMES = new Set(['createFile', 'renderPrompt']);
+// Paid tier tools (require auth)
+const PAID_TOOL_NAMES = new Set([
+  'createFile',
+  'listFiles',
+  'getFile',
+  'updateFile',
+  'archiveFile',
+  'listDiagrams',
+  'createDiagram',
+  'getDiagram',
+  'updateDiagram',
+  'deleteDiagram',
+  'renderPrompt',
+]);
 
 const PREFERRED_TOOL_NOTE =
   '\n\nNote: For rendering multiple diagrams at once, prefer the `renderElements` tool.';
@@ -130,6 +219,15 @@ export type {
   RenderElementsInput,
   SingleDiagramInput,
   CreateFileInput,
+  ListFilesInput,
+  GetFileInput,
+  UpdateFileInput,
+  ArchiveFileInput,
+  ListDiagramsInput,
+  GetDiagramInput,
+  CreateDiagramInput,
+  UpdateDiagramInput,
+  DeleteDiagramInput,
 };
 
 // Re-export DiagramTypes for external use

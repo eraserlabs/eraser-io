@@ -14,6 +14,8 @@ export const linkAccessSettings = [
   'anyone-with-link-can-edit',
   'publicly-viewable',
   'publicly-editable',
+  'sso-readable',
+  'sso-editable',
 ] as const;
 export const aiModeSettings = ['standard', 'premium'] as const;
 

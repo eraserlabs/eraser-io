@@ -20,13 +20,18 @@ export const createFileSchema = z.object({
     .optional()
     .describe('Standalone diagram elements using diagram DSL syntax. Will be added to canvas.'),
   linkAccess: LinkAccessEnum.optional().describe('Optional link sharing access level. Defaults to using team config.'),
+  folderId: z.string().optional().describe('Folder ID to create the file in.'),
 });
+
+export const FILE_SORT_FIELDS = ['createdAt', 'updatedAt'] as const;
+export const FILE_SORT_INVERSE = ['-createdAt', '-updatedAt'] as const;
+export const ALL_FILE_SORT_FIELDS = [...FILE_SORT_FIELDS, ...FILE_SORT_INVERSE] as const;
 
 export const listFilesSchema = z.object({
   limit: z.number().optional().describe('Maximum number of files to return (1-500). Defaults to 100.'),
   cursor: z.string().optional().describe('Cursor for pagination. Use nextCursor from a previous response.'),
   folderId: z.string().optional().describe('Filter files by folder ID.'),
-  sort: z.string().optional().describe('Sort field with optional "-" prefix for descending. Examples: "-updatedAt" (default), "createdAt". Valid fields: createdAt, updatedAt.'),
+  sort: z.enum(ALL_FILE_SORT_FIELDS).optional().describe('Sort field with optional "-" prefix for descending. Examples: "-updatedAt" (default), "createdAt". Valid fields: createdAt, updatedAt.'),
   author: z.string().optional().describe('Filter by author (user ID or email address).'),
 });
 
@@ -46,6 +51,7 @@ export const archiveFileSchema = z.object({
   fileId: z.string().describe('The ID of the file to archive.'),
 });
 
+export type FileSortFields = typeof ALL_FILE_SORT_FIELDS[number];
 export type CreateFileInput = z.infer<typeof createFileSchema>;
 export type ListFilesInput = z.infer<typeof listFilesSchema>;
 export type GetFileInput = z.infer<typeof getFileSchema>;

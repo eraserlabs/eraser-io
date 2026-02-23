@@ -1,25 +1,21 @@
 import { z } from 'zod';
 
 // Schemas
+import { DiagramTypes } from './schemas/shared';
+import { createFileSchema } from './schemas/files';
+import { listFilesSchema } from './schemas/files';
+import { getFileSchema } from './schemas/files';
+import { updateFileSchema } from './schemas/files';
+import { archiveFileSchema } from './schemas/files';
+import { renderPromptSchema } from './schemas/renderPrompt';
+import { renderElementsSchema } from './schemas/renderElements';
+import { singleDiagramSchema } from './schemas/singleDiagram';
 import {
-  DiagramTypes,
-  toJsonSchema,
-  DiagramElementInput,
-} from './schemas/shared';
-import { createFileSchema, CreateFileInput } from './schemas/files';
-import { listFilesSchema, ListFilesInput } from './schemas/files';
-import { getFileSchema, GetFileInput } from './schemas/files';
-import { updateFileSchema, UpdateFileInput } from './schemas/files';
-import { archiveFileSchema, ArchiveFileInput } from './schemas/files';
-import { renderPromptSchema, RenderPromptInput } from './schemas/renderPrompt';
-import { renderElementsSchema, RenderElementsInput } from './schemas/renderElements';
-import { singleDiagramSchema, SingleDiagramInput } from './schemas/singleDiagram';
-import {
-  listDiagramsSchema, ListDiagramsInput,
-  getDiagramSchema, GetDiagramInput,
-  createDiagramSchema, CreateDiagramInput,
-  updateDiagramSchema, UpdateDiagramInput,
-  deleteDiagramSchema, DeleteDiagramInput,
+  listDiagramsSchema,
+  getDiagramSchema,
+  createDiagramSchema,
+  updateDiagramSchema,
+  deleteDiagramSchema,
 } from './schemas/diagrams';
 
 // Descriptions
@@ -56,105 +52,105 @@ export const mcpTools: ReadonlyArray<McpToolDefinition<any>> = [
     name: 'createFile',
     description: CREATE_FILE_DESCRIPTION,
     schema: createFileSchema,
-    jsonSchema: toJsonSchema(createFileSchema),
+    jsonSchema: createFileSchema.toJSONSchema(),
   },
   {
     name: 'listFiles',
     description: LIST_FILES_DESCRIPTION,
     schema: listFilesSchema,
-    jsonSchema: toJsonSchema(listFilesSchema),
+    jsonSchema: listFilesSchema.toJSONSchema(),
   },
   {
     name: 'getFile',
     description: GET_FILE_DESCRIPTION,
     schema: getFileSchema,
-    jsonSchema: toJsonSchema(getFileSchema),
+    jsonSchema: getFileSchema.toJSONSchema(),
   },
   {
     name: 'updateFile',
     description: UPDATE_FILE_DESCRIPTION,
     schema: updateFileSchema,
-    jsonSchema: toJsonSchema(updateFileSchema),
+    jsonSchema: updateFileSchema.toJSONSchema(),
   },
   {
     name: 'archiveFile',
     description: ARCHIVE_FILE_DESCRIPTION,
     schema: archiveFileSchema,
-    jsonSchema: toJsonSchema(archiveFileSchema),
+    jsonSchema: archiveFileSchema.toJSONSchema(),
   },
   // Diagram CRUD
   {
     name: 'listDiagrams',
     description: LIST_DIAGRAMS_DESCRIPTION,
     schema: listDiagramsSchema,
-    jsonSchema: toJsonSchema(listDiagramsSchema),
+    jsonSchema: listDiagramsSchema.toJSONSchema(),
   },
   {
     name: 'createDiagram',
     description: CREATE_DIAGRAM_DESCRIPTION,
     schema: createDiagramSchema,
-    jsonSchema: toJsonSchema(createDiagramSchema),
+    jsonSchema: createDiagramSchema.toJSONSchema(),
   },
   {
     name: 'getDiagram',
     description: GET_DIAGRAM_DESCRIPTION,
     schema: getDiagramSchema,
-    jsonSchema: toJsonSchema(getDiagramSchema),
+    jsonSchema: getDiagramSchema.toJSONSchema(),
   },
   {
     name: 'updateDiagram',
     description: UPDATE_DIAGRAM_DESCRIPTION,
     schema: updateDiagramSchema,
-    jsonSchema: toJsonSchema(updateDiagramSchema),
+    jsonSchema: updateDiagramSchema.toJSONSchema(),
   },
   {
     name: 'deleteDiagram',
     description: DELETE_DIAGRAM_DESCRIPTION,
     schema: deleteDiagramSchema,
-    jsonSchema: toJsonSchema(deleteDiagramSchema),
+    jsonSchema: deleteDiagramSchema.toJSONSchema(),
   },
   // Render tools
   {
     name: 'renderPrompt',
     description: RENDER_PROMPT_DESCRIPTION,
     schema: renderPromptSchema,
-    jsonSchema: toJsonSchema(renderPromptSchema),
+    jsonSchema: renderPromptSchema.toJSONSchema(),
   },
   {
     name: 'renderElements',
     description: RENDER_ELEMENTS_DESCRIPTION,
     schema: renderElementsSchema,
-    jsonSchema: toJsonSchema(renderElementsSchema),
+    jsonSchema: renderElementsSchema.toJSONSchema(),
   },
   {
     name: 'renderSequenceDiagram',
     description: SEQUENCE_DIAGRAM_DESCRIPTION,
     schema: singleDiagramSchema,
-    jsonSchema: toJsonSchema(singleDiagramSchema),
+    jsonSchema: singleDiagramSchema.toJSONSchema(),
   },
   {
     name: 'renderEntityRelationshipDiagram',
     description: ERD_DESCRIPTION,
     schema: singleDiagramSchema,
-    jsonSchema: toJsonSchema(singleDiagramSchema),
+    jsonSchema: singleDiagramSchema.toJSONSchema(),
   },
   {
     name: 'renderCloudArchitectureDiagram',
     description: CLOUD_ARCHITECTURE_DESCRIPTION,
     schema: singleDiagramSchema,
-    jsonSchema: toJsonSchema(singleDiagramSchema),
+    jsonSchema: singleDiagramSchema.toJSONSchema(),
   },
   {
     name: 'renderFlowchart',
     description: FLOWCHART_DESCRIPTION,
     schema: singleDiagramSchema,
-    jsonSchema: toJsonSchema(singleDiagramSchema),
+    jsonSchema: singleDiagramSchema.toJSONSchema(),
   },
   {
     name: 'renderBpmnDiagram',
     description: BPMN_DESCRIPTION,
     schema: singleDiagramSchema,
-    jsonSchema: toJsonSchema(singleDiagramSchema),
+    jsonSchema: singleDiagramSchema.toJSONSchema(),
   },
 ];
 
@@ -211,24 +207,3 @@ export const freeMcpToolMap = new Map(freeMcpTools.map((tool) => [tool.name, too
 export function isFreeMcpToolName(name: unknown): name is string {
   return freeMcpToolMap.has(name as string);
 }
-
-// Re-export types for convenience
-export type {
-  RenderPromptInput,
-  DiagramElementInput,
-  RenderElementsInput,
-  SingleDiagramInput,
-  CreateFileInput,
-  ListFilesInput,
-  GetFileInput,
-  UpdateFileInput,
-  ArchiveFileInput,
-  ListDiagramsInput,
-  GetDiagramInput,
-  CreateDiagramInput,
-  UpdateDiagramInput,
-  DeleteDiagramInput,
-};
-
-// Re-export DiagramTypes for external use
-export { DiagramTypes };

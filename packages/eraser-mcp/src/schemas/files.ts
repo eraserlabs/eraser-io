@@ -20,6 +20,7 @@ export const createFileSchema = z.object({
     .optional()
     .describe('Standalone diagram elements using diagram DSL syntax. Will be added to canvas.'),
   linkAccess: LinkAccessEnum.optional().describe('Optional link sharing access level. Defaults to using team config.'),
+  folderId: z.string().optional().describe('Folder ID to create the file in.'),
 });
 
 export const listFilesSchema = z.object({

@@ -1,6 +1,6 @@
 {
   "name": "@eraserlabs/eraser-mcp",
-  "version": "0.3.3-next.1",
+  "version": "0.3.3-next.5",
   "description": "MCP server for generating diagrams with Eraser.io",
   "private": false,
   "main": "dist/index.js",
@@ -30,14 +30,13 @@
   },
   "license": "MIT",
   "dependencies": {
-    "zod": "^3.25.76",
-    "zod-to-json-schema": "^3.24.5"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^4.8.4"
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   }
 }

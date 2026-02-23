@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 /**
  * Settings duplicated from @eraserlabs/shared/modules/diagram-parser/settings
@@ -18,6 +17,8 @@ export const linkAccessSettings = [
   'sso-editable',
 ] as const;
 export const aiModeSettings = ['standard', 'premium'] as const;
+export const themeSettings = ['light', 'dark'] as const;
+export const fileFormatSettings = ['png', 'jpeg'] as const;
 
 /**
  * The diagram types supported by the MCP tools.
@@ -58,8 +59,8 @@ export const renderOptionsSchema = z
   .object({
     imageQuality: imageQualitySchema.optional().describe('Image resolution multiplier (1x, 2x, or 3x).'),
     background: z.boolean().optional().describe('Whether to include a solid background.'),
-    theme: z.enum(['light', 'dark']).optional(),
-    format: z.enum(['png', 'jpeg']).optional(),
+    theme: z.enum(themeSettings).optional(),
+    format: z.enum(fileFormatSettings).optional(),
     typeface: z.enum(typefaceSettings).optional(),
     colorMode: z.enum(colorModeSettings).optional(),
     styleMode: z.enum(styleModeSettings).optional(),
@@ -68,10 +69,6 @@ export const renderOptionsSchema = z
     fileOptions: fileOptionsSchema.optional(),
   })
   .passthrough();
-
-export function toJsonSchema(schema: z.ZodType): Record<string, unknown> {
-  return zodToJsonSchema(schema, { target: 'openApi3' });
-}
 
 // Types
 export type DiagramElementInput = z.infer<typeof diagramElementSchema>;

@@ -1,6 +1,6 @@
 # Eraser MCP Server
 
-Model Context Protocol (MCP) server for generating diagrams with [Eraser](https://eraser.io).
+Model Context Protocol (MCP) server for [Eraser](https://eraser.io) - generate diagrams and access your files and diagrams.
 
 ## Quick Start
 
@@ -56,15 +56,50 @@ Add to your Claude Desktop config:
 
 ## Available Tools
 
+### AI Diagram
+
+Prompt to diagram.
+
 | Tool | Description |
 |------|-------------|
-| `renderSequenceDiagram` | Render sequence diagrams |
-| `renderEntityRelationshipDiagram` | Render ERD diagrams |
-| `renderCloudArchitectureDiagram` | Render cloud architecture diagrams |
-| `renderFlowchart` | Render flowcharts |
-| `renderBpmnDiagram` | Render BPMN diagrams |
 | `renderPrompt` | Generate diagrams from natural language using AI |
-| `renderElements` | Render multiple diagram elements |
+
+### Rendering
+
+Diagram code (DSL) to diagram.
+
+| Tool | Description |
+|------|-------------|
+| `renderSequenceDiagram` | Render sequence diagrams from diagram code |
+| `renderEntityRelationshipDiagram` | Render ERD diagrams from diagram code |
+| `renderCloudArchitectureDiagram` | Render cloud architecture diagrams from diagram code |
+| `renderFlowchart` | Render flowcharts from diagram code |
+| `renderBpmnDiagram` | Render BPMN diagrams from diagram code |
+| `renderElements` | Render multiple diagram elements from diagram code |
+
+### Files
+
+CRUD for files on app.eraser.io.
+
+| Tool | Description |
+|------|-------------|
+| `createFile` | Create a new Eraser file with document and/or diagram elements |
+| `listFiles` | List files in the workspace with pagination, sorting, and filtering |
+| `getFile` | Get a single file including metadata, content, and diagram elements |
+| `updateFile` | Update an existing file's metadata and/or document content |
+| `archiveFile` | Archive (soft-delete) a file |
+
+### Diagrams
+
+CRUD for diagrams on app.eraser.io.
+
+| Tool | Description |
+|------|-------------|
+| `listDiagrams` | List all diagrams in a file |
+| `createDiagram` | Create a new diagram in an existing file |
+| `getDiagram` | Get a specific diagram from a file |
+| `updateDiagram` | Update the code of an existing diagram |
+| `deleteDiagram` | Permanently delete a diagram from a file |
 
 ## Documentation
 

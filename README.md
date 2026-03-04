@@ -1,6 +1,6 @@
 # Eraser
 
-Open-source tools for generating diagrams with [Eraser](https://eraser.io).
+Open-source tools for generating diagrams and accessing your files, diagrams, and documents on [Eraser](https://eraser.io).
 
 ⭐ If you find this useful, give us a star!
 
@@ -8,18 +8,33 @@ Open-source tools for generating diagrams with [Eraser](https://eraser.io).
 
 | Resource | Description |
 |----------|-------------|
-| [MCP Server](./packages/eraser-mcp) | Model Context Protocol server for AI assistants |
+| [Claude Plugin](./claude-plugins/eraser) | Claude Code plugin with skill and MCP integration |
 | [Skills](./skills) | Agent skills for Claude Code, Cursor, and other AI assistants |
+| [MCP Server](./packages/eraser-mcp) | Model Context Protocol server for any MCP-compatible client |
 
 ## Quick Start
 
-**For AI Coding Assistants (Claude Code, Cursor):**
+**For Claude Code:**
 
-See the [Skills README](./skills/README.md) for installation instructions.
+Install the plugin (includes skill + MCP tools):
 
-**For MCP Integration:**
+```bash
+/plugin install eraser@github:eraserlabs/eraserio/claude-plugins/eraser
+```
 
-See the [MCP README](./packages/eraser-mcp/README.md) for setup.
+See the [Claude Plugin README](./claude-plugins/eraser/README.md) for details.
+
+**For Cursor and other AI Assistants:**
+
+```bash
+npx skills add eraserlabs/eraser-io
+```
+
+See the [Skills README](./skills/README.md) for details.
+
+**For standalone MCP Integration:**
+
+See the [MCP Server README](./packages/eraser-mcp/README.md) for setup.
 
 ## Documentation
 

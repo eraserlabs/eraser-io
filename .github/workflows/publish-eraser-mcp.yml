@@ -54,7 +54,7 @@ jobs:
           echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
       - name: Publish to npm (Trusted Publishing via OIDC)
-        run: npm publish --tag "${{ inputs.npm_tag }}"
+        run: NODE_AUTH_TOKEN="" npm publish --tag "${{ inputs.npm_tag }}"
 
       - name: Commit and tag version bump
         id: tag

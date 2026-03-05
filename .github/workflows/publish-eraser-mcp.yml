@@ -2,10 +2,22 @@ name: Publish eraser-mcp
 
 on:
   workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type"
+        required: true
+        default: "minor"
+        type: choice
+        options: [patch, minor, major]
+      npm_tag:
+        description: "npm dist-tag"
+        required: true
+        default: "latest"
+        type: choice
+        options: [latest, next]
 
 jobs:
   publish:
-    name: Bump, build, and publish
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -13,11 +25,13 @@ jobs:
 
     permissions:
       contents: write
+      id-token: write
+
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
@@ -33,24 +47,30 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump minor version
+      - name: Bump version (no tag yet)
         id: bump
         run: |
-          npm version minor --no-git-tag-version
+          npm version "${{ inputs.bump }}" --no-git-tag-version
           echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - name: Build
-        run: npm run build
-
-      - name: Publish to npm
-        run: npm publish --tag latest
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish to npm (Trusted Publishing via OIDC)
+        run: npm publish --tag "${{ inputs.npm_tag }}"
 
       - name: Commit and tag version bump
+        id: tag
         run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          TAG="eraser-mcp-v${VERSION}"
           git add package.json package-lock.json
-          git commit -m "v${{ steps.bump.outputs.version }}"
-          git tag "v${{ steps.bump.outputs.version }}"
+          git commit -m "${TAG}"
+          git tag "${TAG}"
           git push origin HEAD
-          git push origin "v${{ steps.bump.outputs.version }}"
+          git push origin "${TAG}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release (auto notes from merged PRs)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          generate_release_notes: true

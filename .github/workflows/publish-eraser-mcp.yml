@@ -1,11 +1,7 @@
 name: Publish eraser-mcp
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'packages/eraser-mcp/**'
+  workflow_dispatch:
 
 jobs:
   publish:

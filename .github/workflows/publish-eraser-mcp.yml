@@ -1,0 +1,76 @@
+name: Publish eraser-mcp
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type"
+        required: true
+        default: "minor"
+        type: choice
+        options: [patch, minor, major]
+      npm_tag:
+        description: "npm dist-tag"
+        required: true
+        default: "latest"
+        type: choice
+        options: [latest, next]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/eraser-mcp
+
+    permissions:
+      contents: write
+      id-token: write
+
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure git
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version (no tag yet)
+        id: bump
+        run: |
+          npm version "${{ inputs.bump }}" --no-git-tag-version
+          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to npm (Trusted Publishing via OIDC)
+        run: NODE_AUTH_TOKEN="" npm publish --tag "${{ inputs.npm_tag }}"
+
+      - name: Commit and tag version bump
+        id: tag
+        run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          TAG="eraser-mcp-v${VERSION}"
+          git add package.json package-lock.json
+          git commit -m "${TAG}"
+          git tag "${TAG}"
+          git push origin HEAD
+          git push origin "${TAG}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release (auto notes from merged PRs)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          generate_release_notes: true

@@ -1,0 +1,60 @@
+name: Publish eraser-mcp
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/eraser-mcp/**'
+
+jobs:
+  publish:
+    name: Bump, build, and publish
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/eraser-mcp
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure git
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump minor version
+        id: bump
+        run: |
+          npm version minor --no-git-tag-version
+          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to npm
+        run: npm publish --tag latest
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit and tag version bump
+        run: |
+          git add package.json package-lock.json
+          git commit -m "v${{ steps.bump.outputs.version }}"
+          git tag "v${{ steps.bump.outputs.version }}"
+          git push origin HEAD
+          git push origin "v${{ steps.bump.outputs.version }}"

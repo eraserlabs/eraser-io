@@ -9,7 +9,7 @@ export const renderPromptSchema = renderOptionsSchema
     attachments: z.array(z.unknown()).optional(),
     contextId: z.string().optional().describe('ID of an AI preset belonging to the team.'),
     mode: z.enum(aiModeSettings).optional(),
-    git: gitRepoSchema.optional(),
+    gitContexts: z.array(gitRepoSchema).optional().describe('Git repository contexts for diagram generation. Supports one or more repositories.'),
   })
   .passthrough();
 

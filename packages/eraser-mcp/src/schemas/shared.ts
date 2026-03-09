@@ -43,10 +43,15 @@ export const diagramElementSchema = z.object({
   y: z.number().optional(),
 });
 
-export const gitRepoSchema = z.object({
-  repoName: z.string().describe('Name of the repository.'),
-  orgName: z.string().describe('Name of the organization.'),
-});
+export const gitRepoSchema = z.union([
+  z.object({
+    publicRepoUrl: z.string().describe('Full URL of a public GitHub repository (e.g. https://github.com/org/repo).'),
+  }),
+  z.object({
+    repoName: z.string().describe('Name of the repository.'),
+    orgName: z.string().describe('Name of the organization.'),
+  }),
+]);
 
 export const fileOptionsSchema = z.object({
   create: z.boolean().optional().describe('Whether to create a new file. Defaults to false.'),

@@ -10,7 +10,11 @@ Generate diagrams such as architecture, flowcharts, BPMN diagrams, sequence diag
    /plugin install eraser@github:eraserlabs/eraserio/claude-plugins/eraser
    ```
 
-2. **Start using it:**
+2. **Optional: get your Eraser API token** from [Eraser documentation](https://docs.eraser.io/reference/api-token) for authenticated endpoints and watermark-free output
+
+3. **If you have a token, configure it** (see [Configuration](#configuration) below)
+
+4. **Start using it:**
    - **Using the skill**: Ask Claude "Create a diagram of my Terraform infrastructure" or use `/eraser:diagram`
    - **Using MCP tools**: Claude can automatically use MCP tools like `renderCloudArchitectureDiagram`, `renderSequenceDiagram`, etc. when appropriate
 

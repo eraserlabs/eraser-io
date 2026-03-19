@@ -29,7 +29,14 @@ import * as readline from 'readline';
 import * as fs from 'fs';
 import * as path from 'path';
 import { mcpTools } from './tools';
-import { ensureValidToken, invalidateCredentials, performLogin, logout, whoami } from './oauth/flow';
+import {
+  ensureValidToken,
+  invalidateCredentials,
+  performLogin,
+  logout,
+  whoami,
+  recoverAuthAfter401,
+} from './oauth/flow';
 
 const API_URL = process.env.ERASER_API_URL || 'https://app.eraser.io/api/mcp';
 const ERASER_OUTPUT_DIR = process.env.ERASER_OUTPUT_DIR || '.eraser/scratchpad';
@@ -167,31 +174,41 @@ async function ensureServerSession(): Promise<void> {
     return;
   }
 
-  const accessToken = await getAccessToken();
-  const initRequest: JsonRpcRequest = {
-    jsonrpc: '2.0',
-    id: 'stdio-init',
-    method: 'initialize',
-    params: {
-      protocolVersion: '2025-11-25',
-      capabilities: {},
-      clientInfo: { name: 'eraser-mcp-stdio', version: '1.0.0' },
-    },
+  const runInitialize = async (accessToken: string): Promise<Response> => {
+    const initRequest: JsonRpcRequest = {
+      jsonrpc: '2.0',
+      id: 'stdio-init',
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 'eraser-mcp-stdio', version: '1.0.0' },
+      },
+    };
+
+    return fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(initRequest),
+    });
   };
 
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(initRequest),
-  });
+  let accessToken = await getAccessToken();
+  let response = await runInitialize(accessToken);
 
   if (response.status === 401) {
-    // Our stored token was rejected — clear it so the next call triggers fresh OAuth.
     cachedAccessToken = null;
+    accessToken = await recoverAuthAfter401();
+    cachedAccessToken = accessToken;
+    response = await runInitialize(accessToken);
+  }
+
+  if (response.status === 401) {
     invalidateCredentials();
+    cachedAccessToken = null;
     throw new Error(
       'Not authenticated with Eraser. Run `npx @eraserlabs/eraser-mcp login` to sign in.'
     );
@@ -205,6 +222,29 @@ async function ensureServerSession(): Promise<void> {
   const sessionHeader = response.headers.get('Mcp-Session-Id');
   if (sessionHeader) {
     mcpSessionId = sessionHeader;
+  }
+
+  // MCP 2025-11-25: client MUST send notifications/initialized after initialize result.
+  const initializedNotif = {
+    jsonrpc: '2.0',
+    method: 'notifications/initialized',
+    params: {},
+  };
+  const postInitHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${accessToken}`,
+  };
+  if (mcpSessionId) {
+    postInitHeaders['Mcp-Session-Id'] = mcpSessionId;
+  }
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: postInitHeaders,
+      body: JSON.stringify(initializedNotif),
+    });
+  } catch {
+    // Non-fatal if the server ignores the notification
   }
 }
 
@@ -306,7 +346,7 @@ async function handleRequest(request: JsonRpcRequest): Promise<void> {
       }
 
       if (response.status === 401) {
-        // Token might be invalid/expired; clear OAuth cache and re-establish session.
+        // Token might be invalid/expired; try refresh_token before wiping credentials.
         // In API token mode, the token is immutable — nothing to refresh.
         if (ERASER_API_TOKEN) {
           const text = await response.text();
@@ -315,7 +355,7 @@ async function handleRequest(request: JsonRpcRequest): Promise<void> {
         }
         cachedAccessToken = null;
         mcpSessionId = null;
-        invalidateCredentials();
+        cachedAccessToken = await recoverAuthAfter401();
 
         await ensureServerSession();
         const newToken = await getAccessToken();

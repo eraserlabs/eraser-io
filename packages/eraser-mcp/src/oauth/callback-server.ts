@@ -2,6 +2,16 @@ import * as http from 'http';
 import { URL } from 'url';
 import { CALLBACK_PORT } from './config';
 
+/** Escape user-controlled OAuth error strings before embedding in HTML. */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 const SUCCESS_HTML = `
 <!DOCTYPE html>
 <html>
@@ -39,7 +49,9 @@ const SUCCESS_HTML = `
 </html>
 `;
 
-const ERROR_HTML = (message: string) => `
+const ERROR_HTML = (rawMessage: string) => {
+  const message = escapeHtml(rawMessage);
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -75,6 +87,7 @@ const ERROR_HTML = (message: string) => `
 </body>
 </html>
 `;
+};
 
 export interface CallbackResult {
   code: string;

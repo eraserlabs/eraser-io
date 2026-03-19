@@ -160,9 +160,40 @@ export async function ensureValidToken(): Promise<string> {
 }
 
 /**
- * Called when the server rejects our token with 401. Clears stored credentials
- * so the next ensureValidToken call triggers a fresh OAuth login instead of
- * retrying the same invalid token.
+ * After the API returns 401, try refresh_token before wiping credentials or
+ * opening the browser. Use this instead of invalidateCredentials() + ensureValidToken()
+ * so refresh_token in ~/.eraser/ is preserved until refresh actually fails.
+ */
+export async function recoverAuthAfter401(): Promise<string> {
+  const credentials = loadCredentials(CREDENTIAL_KEY);
+
+  if (!credentials) {
+    const loggedIn = await performLogin();
+    return loggedIn.accessToken;
+  }
+
+  try {
+    console.error('Refreshing access token (server rejected previous access token)...');
+    const tokens = await refreshAccessToken(credentials.refreshToken);
+    const updated: StoredCredentials = {
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiresAt: Date.now() + tokens.expires_in * 1000,
+      scope: tokens.scope,
+    };
+    saveCredentials(updated, CREDENTIAL_KEY);
+    return updated.accessToken;
+  } catch {
+    console.error('Token refresh failed after 401, clearing credentials and re-authenticating...');
+    clearCredentials(CREDENTIAL_KEY);
+    const loggedIn = await performLogin();
+    return loggedIn.accessToken;
+  }
+}
+
+/**
+ * Clears stored OAuth credentials (e.g. explicit logout). Prefer recoverAuthAfter401
+ * when the server returns 401 so refresh_token can be used first.
  */
 export function invalidateCredentials(): void {
   clearCredentials(CREDENTIAL_KEY);

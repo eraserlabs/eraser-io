@@ -18,7 +18,7 @@ Generate diagrams such as architecture, flowcharts, BPMN diagrams, sequence diag
    - **Using the skill**: Ask Claude "Create a diagram of my Terraform infrastructure" or use `/eraser:diagram`
    - **Using MCP tools**: Claude can automatically use MCP tools like `renderCloudArchitectureDiagram`, `renderSequenceDiagram`, etc. when appropriate
 
-On first use, you'll be prompted to authenticate with your Eraser account via your browser.
+**Note**: The `/eraser:diagram` skill can work without an API token (diagrams will have watermarks). See [Configuration](#configuration) for details. For MCP tools on your first use, you'll be prompted to authenticate with your Eraser account via your browser.
 
 ## Installation
 

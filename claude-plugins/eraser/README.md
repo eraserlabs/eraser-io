@@ -153,6 +153,7 @@ Claude: [Uses /eraser:diagram skill to parse CloudFormation and create diagram]
 ## Documentation
 
 - [Eraser API Documentation](https://docs.eraser.io)
+- [Get an API Token](https://docs.eraser.io/reference/api-token)
 - [Eraser Agent Integration Documentation](https://docs.eraser.io/docs/using-ai-agent-integrations)
 
 ## License

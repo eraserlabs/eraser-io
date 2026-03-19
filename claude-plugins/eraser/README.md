@@ -86,7 +86,12 @@ The plugin includes MCP tools that can be called programmatically:
 
 ## Configuration
 
-The plugin connects to the remote Eraser MCP server at `https://app.eraser.io/api/mcp`. Authentication is handled automatically via OAuth - you'll be prompted to sign in with your Eraser account on first use.
+### API Key Requirements
+
+**Important**: The `/eraser:diagram` skill can work without an API token (diagrams will have watermarks). For watermark-free, high-resolution diagrams, authorization is required for both the skill and MCP tools.
+
+Get your Eraser API token from the [Eraser documentation](https://docs.eraser.io/reference/api-token).
+
 
 The MCP server configuration is in `.mcp.json`:
 

@@ -153,6 +153,10 @@ let cachedAccessToken: string | null = null;
 let mcpSessionId: string | null = null;
 let sessionInitError: string | null = null;
 
+// Serialize OAuth / session initialization to avoid concurrent performLogin() calls
+// racing for the same callback server port.
+let serverSessionPromise: Promise<void> | null = null;
+
 async function getAccessToken(): Promise<string> {
   // API token mode: return directly, skip OAuth
   if (ERASER_API_TOKEN) {
@@ -164,7 +168,7 @@ async function getAccessToken(): Promise<string> {
   return cachedAccessToken;
 }
 
-async function ensureServerSession(): Promise<void> {
+async function ensureServerSessionInternal(): Promise<void> {
   // API token mode: server handles team directly from the token — no session needed
   if (ERASER_API_TOKEN) {
     return;
@@ -248,6 +252,36 @@ async function ensureServerSession(): Promise<void> {
   }
 }
 
+/**
+ * Serialized wrapper for session initialization.
+ * Ensures only one OAuth/session init runs at a time to avoid concurrent
+ * performLogin() calls racing for the same callback server port.
+ */
+async function ensureServerSession(): Promise<void> {
+  // API token mode: no session needed
+  if (ERASER_API_TOKEN) {
+    return;
+  }
+
+  // Already have a session
+  if (mcpSessionId) {
+    return;
+  }
+
+  // If there's already an in-flight init, wait on that promise
+  if (serverSessionPromise) {
+    return serverSessionPromise;
+  }
+
+  // Start a new init and store the promise so concurrent callers can await it
+  serverSessionPromise = ensureServerSessionInternal();
+  try {
+    await serverSessionPromise;
+  } finally {
+    serverSessionPromise = null;
+  }
+}
+
 async function handleRequest(request: JsonRpcRequest): Promise<void> {
   const id = request.id ?? null;
 
@@ -282,9 +316,11 @@ async function handleRequest(request: JsonRpcRequest): Promise<void> {
     // Proxy to the remote server so identity tools (whoami, listTeams, selectTeam)
     // defined server-side are included in the response.
     try {
+      // If there was a previous init error, retry once before giving up.
+      // This allows recovery from transient network failures.
       if (sessionInitError) {
-        sendError(id, -32000, sessionInitError);
-        return;
+        sessionInitError = null;
+        mcpSessionId = null;
       }
       await ensureServerSession();
       const accessToken = await getAccessToken();
@@ -315,13 +351,12 @@ async function handleRequest(request: JsonRpcRequest): Promise<void> {
 
   if (request.method === 'tools/call') {
     try {
-      // If initialize-time auth failed, surface that error immediately rather than
-      // retrying with the same invalid token.
+      // If there was a previous init error, retry once before giving up.
+      // This allows recovery from transient network failures.
       if (sessionInitError) {
-        sendError(id, -32000, sessionInitError);
-        return;
+        sessionInitError = null;
+        mcpSessionId = null;
       }
-
       await ensureServerSession();
       const accessToken = await getAccessToken();
 

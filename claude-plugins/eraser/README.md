@@ -10,11 +10,15 @@ Generate diagrams such as architecture, flowcharts, BPMN diagrams, sequence diag
    /plugin install eraser@github:eraserlabs/eraserio/claude-plugins/eraser
    ```
 
-2. **Start using it:**
+2. **Optional: get your Eraser API token** from [Eraser documentation](https://docs.eraser.io/reference/api-token) for authenticated endpoints and watermark-free output
+
+3. **If you have a token, configure it** (see [Configuration](#configuration) below)
+
+4. **Start using it:**
    - **Using the skill**: Ask Claude "Create a diagram of my Terraform infrastructure" or use `/eraser:diagram`
    - **Using MCP tools**: Claude can automatically use MCP tools like `renderCloudArchitectureDiagram`, `renderSequenceDiagram`, etc. when appropriate
 
-On first use, you'll be prompted to authenticate with your Eraser account via your browser.
+**Note**: The `/eraser:diagram` skill can work without an API token (diagrams will have watermarks). See [Configuration](#configuration) for details. For MCP tools on your first use, you'll be prompted to authenticate with your Eraser account via your browser.
 
 ## Installation
 
@@ -82,7 +86,12 @@ The plugin includes MCP tools that can be called programmatically:
 
 ## Configuration
 
-The plugin connects to the remote Eraser MCP server at `https://app.eraser.io/api/mcp`. Authentication is handled automatically via OAuth - you'll be prompted to sign in with your Eraser account on first use.
+### API Key Requirements
+
+**Important**: The `/eraser:diagram` skill can work without an API token (diagrams will have watermarks). For watermark-free, high-resolution diagrams, authorization is required for both the skill and MCP tools.
+
+Get your Eraser API token from the [Eraser documentation](https://docs.eraser.io/reference/api-token).
+
 
 The MCP server configuration is in `.mcp.json`:
 
@@ -144,6 +153,7 @@ Claude: [Uses /eraser:diagram skill to parse CloudFormation and create diagram]
 ## Documentation
 
 - [Eraser API Documentation](https://docs.eraser.io)
+- [Get an API Token](https://docs.eraser.io/reference/api-token)
 - [Eraser Agent Integration Documentation](https://docs.eraser.io/docs/using-ai-agent-integrations)
 
 ## License

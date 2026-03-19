@@ -5,7 +5,6 @@ Generate diagrams such as architecture, flowcharts, BPMN diagrams, sequence diag
 ## Quick Start
 
 1. **Install the plugin:**
-
    ```bash
    /plugin install eraser@github:eraserlabs/eraserio/claude-plugins/eraser
    ```

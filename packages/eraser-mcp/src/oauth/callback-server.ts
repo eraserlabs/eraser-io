@@ -96,6 +96,15 @@ export interface CallbackResult {
 
 export function startCallbackServer(expectedState: string): Promise<CallbackResult> {
   return new Promise((resolve, reject) => {
+    let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+
+    const cleanup = () => {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+        timeoutHandle = null;
+      }
+    };
+
     const server = http.createServer((req, res) => {
       const url = new URL(req.url || '/', `http://127.0.0.1:${CALLBACK_PORT}`);
 
@@ -114,6 +123,7 @@ export function startCallbackServer(expectedState: string): Promise<CallbackResu
         res.writeHead(400, { 'Content-Type': 'text/html' });
         res.end(ERROR_HTML(errorDescription || error));
         server.close();
+        cleanup();
         reject(new Error(errorDescription || error));
         return;
       }
@@ -122,6 +132,7 @@ export function startCallbackServer(expectedState: string): Promise<CallbackResu
         res.writeHead(400, { 'Content-Type': 'text/html' });
         res.end(ERROR_HTML('Missing authorization code'));
         server.close();
+        cleanup();
         reject(new Error('Missing authorization code'));
         return;
       }
@@ -130,6 +141,7 @@ export function startCallbackServer(expectedState: string): Promise<CallbackResu
         res.writeHead(400, { 'Content-Type': 'text/html' });
         res.end(ERROR_HTML('Invalid state parameter'));
         server.close();
+        cleanup();
         reject(new Error('Invalid state parameter - possible CSRF attack'));
         return;
       }
@@ -137,10 +149,12 @@ export function startCallbackServer(expectedState: string): Promise<CallbackResu
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(SUCCESS_HTML);
       server.close();
+      cleanup();
       resolve({ code, state });
     });
 
     server.on('error', (err) => {
+      cleanup();
       reject(new Error(`Failed to start callback server: ${err.message}`));
     });
 
@@ -149,7 +163,7 @@ export function startCallbackServer(expectedState: string): Promise<CallbackResu
     });
 
     // Timeout after 5 minutes
-    setTimeout(() => {
+    timeoutHandle = setTimeout(() => {
       server.close();
       reject(new Error('Authorization timed out'));
     }, 5 * 60 * 1000);

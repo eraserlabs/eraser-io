@@ -6,6 +6,12 @@
  * with the Eraser API via stdio transport.
  *
  * Usage:
+ *   npx @eraserlabs/eraser-mcp              # Normal mode (authenticates via OAuth)
+ *   npx @eraserlabs/eraser-mcp login        # Manually trigger login
+ *   npx @eraserlabs/eraser-mcp logout       # Clear saved credentials
+ *   npx @eraserlabs/eraser-mcp whoami       # Show current auth status
+ *
+ * For CI/CD and headless environments, set ERASER_API_TOKEN to bypass the OAuth flow:
  *   ERASER_API_TOKEN=your-token npx @eraserlabs/eraser-mcp
  *
  * Or configure in .cursor/mcp.json:
@@ -13,8 +19,7 @@
  *     "mcpServers": {
  *       "eraser": {
  *         "command": "npx",
- *         "args": ["@eraserlabs/eraser-mcp"],
- *         "env": { "ERASER_API_TOKEN": "your-token" }
+ *         "args": ["@eraserlabs/eraser-mcp"]
  *       }
  *     }
  *   }
@@ -24,10 +29,20 @@ import * as readline from 'readline';
 import * as fs from 'fs';
 import * as path from 'path';
 import { mcpTools } from './tools';
+import {
+  ensureValidToken,
+  invalidateCredentials,
+  performLogin,
+  logout,
+  whoami,
+  recoverAuthAfter401,
+} from './oauth/flow';
 
 const API_URL = process.env.ERASER_API_URL || 'https://app.eraser.io/api/mcp';
 const ERASER_OUTPUT_DIR = process.env.ERASER_OUTPUT_DIR || '.eraser/scratchpad';
-const API_TOKEN = process.env.ERASER_API_TOKEN;
+
+// When set, use this token directly instead of the OAuth flow (for CI/CD and headless environments)
+const ERASER_API_TOKEN = process.env.ERASER_API_TOKEN;
 
 interface JsonRpcRequest {
   jsonrpc: '2.0';
@@ -64,7 +79,6 @@ function sendError(
   });
 }
 
-// Server capabilities and info for MCP handshake
 const SERVER_INFO = {
   name: 'eraser-mcp',
   version: '1.0.0',
@@ -74,7 +88,6 @@ const SERVER_CAPABILITIES = {
   tools: {},
 };
 
-// Convert mcpTools to MCP tool list format
 function getToolsList(): Array<{ name: string; description: string; inputSchema: unknown }> {
   return mcpTools.map((tool) => ({
     name: tool.name,
@@ -90,10 +103,6 @@ interface RenderResult {
   [key: string]: unknown;
 }
 
-/**
- * Extracts the title from diagram code (looks for a line starting with "title ").
- * Normalizes it to a valid filename.
- */
 function extractTitleFromCode(code: string | undefined): string | undefined {
   if (!code) {
     return undefined;
@@ -103,103 +112,318 @@ function extractTitleFromCode(code: string | undefined): string | undefined {
   for (const line of lines) {
     const trimmed = line.trim();
     if (trimmed.toLowerCase().startsWith('title ')) {
-      const title = trimmed.slice(6).trim(); // Remove "title " prefix
-      // Normalize to filename: lowercase, replace spaces/special chars with hyphens
+      const title = trimmed.slice(6).trim();
       return title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+        .replace(/^-+|-+$/g, '');
     }
   }
   return undefined;
 }
 
-/**
- * Downloads an image from a URL and saves it locally.
- * Returns the local file path if successful, undefined otherwise.
- */
 async function saveImageLocally(
   imageUrl: string,
   diagramCode?: string
 ): Promise<string | undefined> {
   try {
     const outputDir = path.resolve(process.cwd(), ERASER_OUTPUT_DIR);
-
-    // Ensure output directory exists
     await fs.promises.mkdir(outputDir, { recursive: true });
 
-    // Generate filename from title or timestamp
     const title = extractTitleFromCode(diagramCode);
     const timestamp = Date.now();
     const filename = title ? `${title}-${timestamp}.png` : `diagram-${timestamp}.png`;
     const localPath = path.join(outputDir, filename);
 
-    // Fetch the image
     const response = await fetch(imageUrl);
     if (!response.ok) {
       return undefined;
     }
 
-    // Save to disk
     const buffer = Buffer.from(await response.arrayBuffer());
     await fs.promises.writeFile(localPath, buffer);
 
     return localPath;
   } catch {
-    // Silently fail - local saving is a nice-to-have
     return undefined;
+  }
+}
+
+let cachedAccessToken: string | null = null;
+let mcpSessionId: string | null = null;
+let sessionInitError: string | null = null;
+
+// Serialize OAuth / session initialization to avoid concurrent performLogin() calls
+// racing for the same callback server port.
+let serverSessionPromise: Promise<void> | null = null;
+
+async function getAccessToken(): Promise<string> {
+  // API token mode: return directly, skip OAuth
+  if (ERASER_API_TOKEN) {
+    return ERASER_API_TOKEN;
+  }
+  if (!cachedAccessToken) {
+    cachedAccessToken = await ensureValidToken();
+  }
+  return cachedAccessToken;
+}
+
+async function ensureServerSessionInternal(): Promise<void> {
+  // API token mode: server handles team directly from the token — no session needed
+  if (ERASER_API_TOKEN) {
+    return;
+  }
+
+  if (mcpSessionId) {
+    return;
+  }
+
+  const runInitialize = async (accessToken: string): Promise<Response> => {
+    const initRequest: JsonRpcRequest = {
+      jsonrpc: '2.0',
+      id: 'stdio-init',
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 'eraser-mcp-stdio', version: '1.0.0' },
+      },
+    };
+
+    return fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(initRequest),
+    });
+  };
+
+  let accessToken = await getAccessToken();
+  let response = await runInitialize(accessToken);
+
+  if (response.status === 401) {
+    cachedAccessToken = null;
+    accessToken = await recoverAuthAfter401();
+    cachedAccessToken = accessToken;
+    response = await runInitialize(accessToken);
+  }
+
+  if (response.status === 401) {
+    invalidateCredentials();
+    cachedAccessToken = null;
+    throw new Error(
+      'Not authenticated with Eraser. Run `npx @eraserlabs/eraser-mcp login` to sign in.'
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(`Server initialize failed: ${response.status}`);
+  }
+
+  sessionInitError = null;
+  const sessionHeader = response.headers.get('Mcp-Session-Id');
+  if (sessionHeader) {
+    mcpSessionId = sessionHeader;
+  }
+
+  // MCP 2025-11-25: client MUST send notifications/initialized after initialize result.
+  const initializedNotif = {
+    jsonrpc: '2.0',
+    method: 'notifications/initialized',
+    params: {},
+  };
+  const postInitHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${accessToken}`,
+  };
+  if (mcpSessionId) {
+    postInitHeaders['Mcp-Session-Id'] = mcpSessionId;
+  }
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: postInitHeaders,
+      body: JSON.stringify(initializedNotif),
+    });
+  } catch {
+    // Non-fatal if the server ignores the notification
+  }
+}
+
+/**
+ * Serialized wrapper for session initialization.
+ * Ensures only one OAuth/session init runs at a time to avoid concurrent
+ * performLogin() calls racing for the same callback server port.
+ */
+async function ensureServerSession(): Promise<void> {
+  // API token mode: no session needed
+  if (ERASER_API_TOKEN) {
+    return;
+  }
+
+  // Already have a session
+  if (mcpSessionId) {
+    return;
+  }
+
+  // If there's already an in-flight init, wait on that promise
+  if (serverSessionPromise) {
+    return serverSessionPromise;
+  }
+
+  // Start a new init and store the promise so concurrent callers can await it
+  serverSessionPromise = ensureServerSessionInternal();
+  try {
+    await serverSessionPromise;
+  } finally {
+    serverSessionPromise = null;
   }
 }
 
 async function handleRequest(request: JsonRpcRequest): Promise<void> {
   const id = request.id ?? null;
 
-  // Handle MCP protocol methods locally
   if (request.method === 'initialize') {
+    // Respond to the local client with our capabilities
     sendResponse({
       jsonrpc: '2.0',
       id,
       result: {
-        protocolVersion: '2024-11-05',
+        protocolVersion: '2025-11-25',
         capabilities: SERVER_CAPABILITIES,
         serverInfo: SERVER_INFO,
       },
     });
+
+    // Proactively establish server session (so tools/call has a session ready).
+    // Capture any auth error so tool calls can surface it immediately.
+    try {
+      await ensureServerSession();
+      sessionInitError = null;
+    } catch (err) {
+      sessionInitError = err instanceof Error ? err.message : 'Authentication failed';
+    }
     return;
   }
 
   if (request.method === 'notifications/initialized') {
-    // This is a notification, no response needed
     return;
   }
 
   if (request.method === 'tools/list') {
-    sendResponse({
-      jsonrpc: '2.0',
-      id,
-      result: {
-        tools: getToolsList(),
-      },
-    });
+    // Proxy to the remote server so identity tools (whoami, listTeams, selectTeam)
+    // defined server-side are included in the response.
+    try {
+      // If there was a previous init error, retry once before giving up.
+      // This allows recovery from transient network failures.
+      if (sessionInitError) {
+        sessionInitError = null;
+        mcpSessionId = null;
+      }
+      await ensureServerSession();
+      const accessToken = await getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      };
+      if (mcpSessionId) {
+        headers['Mcp-Session-Id'] = mcpSessionId;
+      }
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(request),
+      });
+      if (!response.ok) {
+        // Fall back to local tool list if server is unreachable
+        sendResponse({ jsonrpc: '2.0', id, result: { tools: getToolsList() } });
+        return;
+      }
+      const rpcResponse = (await response.json()) as JsonRpcResponse;
+      sendResponse(rpcResponse);
+    } catch {
+      sendResponse({ jsonrpc: '2.0', id, result: { tools: getToolsList() } });
+    }
     return;
   }
 
-  // For tools/call, forward to the API
   if (request.method === 'tools/call') {
-    if (!API_TOKEN) {
-      sendError(id, -32000, 'ERASER_API_TOKEN environment variable is required');
-      return;
-    }
-
     try {
+      // If there was a previous init error, retry once before giving up.
+      // This allows recovery from transient network failures.
+      if (sessionInitError) {
+        sessionInitError = null;
+        mcpSessionId = null;
+      }
+      await ensureServerSession();
+      const accessToken = await getAccessToken();
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      };
+      if (mcpSessionId) {
+        headers['Mcp-Session-Id'] = mcpSessionId;
+      }
+
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${API_TOKEN}`,
-        },
+        headers,
         body: JSON.stringify(request),
       });
+
+      // Check for updated session token (e.g., after selectTeam)
+      const newSessionId = response.headers.get('Mcp-Session-Id');
+      if (newSessionId) {
+        mcpSessionId = newSessionId;
+      }
+
+      if (response.status === 401) {
+        // Token might be invalid/expired; try refresh_token before wiping credentials.
+        // In API token mode, the token is immutable — nothing to refresh.
+        if (ERASER_API_TOKEN) {
+          const text = await response.text();
+          sendError(id, -32000, `API token rejected (HTTP 401): ${text}`);
+          return;
+        }
+        cachedAccessToken = null;
+        mcpSessionId = null;
+        cachedAccessToken = await recoverAuthAfter401();
+
+        await ensureServerSession();
+        const newToken = await getAccessToken();
+
+        const retryHeaders: Record<string, string> = {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${newToken}`,
+        };
+        if (mcpSessionId) {
+          retryHeaders['Mcp-Session-Id'] = mcpSessionId;
+        }
+
+        const retryResponse = await fetch(API_URL, {
+          method: 'POST',
+          headers: retryHeaders,
+          body: JSON.stringify(request),
+        });
+
+        const retrySessionId = retryResponse.headers.get('Mcp-Session-Id');
+        if (retrySessionId) {
+          mcpSessionId = retrySessionId;
+        }
+
+        if (!retryResponse.ok) {
+          const text = await retryResponse.text();
+          sendError(id, -32000, `HTTP ${retryResponse.status}: ${text}`);
+          return;
+        }
+
+        const rpcResponse = (await retryResponse.json()) as JsonRpcResponse;
+        await processAndSendResponse(rpcResponse, request);
+        return;
+      }
 
       if (!response.ok) {
         const text = await response.text();
@@ -208,31 +432,7 @@ async function handleRequest(request: JsonRpcRequest): Promise<void> {
       }
 
       const rpcResponse = (await response.json()) as JsonRpcResponse;
-
-      // Try to save the image locally if there's an imageUrl in the result
-      if (rpcResponse.result) {
-        const result = rpcResponse.result as { content?: Array<{ type: string; text: string }> };
-        if (result.content?.[0]?.type === 'text' && result.content[0].text) {
-          try {
-            const renderResult = JSON.parse(result.content[0].text) as RenderResult;
-            if (renderResult.imageUrl) {
-              // Extract diagram code from request params for title extraction
-              const params = request.params as { arguments?: { code?: string } } | undefined;
-              const diagramCode = params?.arguments?.code;
-
-              const localPath = await saveImageLocally(renderResult.imageUrl, diagramCode);
-              if (localPath) {
-                renderResult.localPath = localPath;
-                result.content[0].text = JSON.stringify(renderResult);
-              }
-            }
-          } catch {
-            // If parsing fails, just return the original response
-          }
-        }
-      }
-
-      sendResponse(rpcResponse);
+      await processAndSendResponse(rpcResponse, request);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       sendError(id, -32000, `Request failed: ${message}`);
@@ -240,11 +440,38 @@ async function handleRequest(request: JsonRpcRequest): Promise<void> {
     return;
   }
 
-  // Unknown method
   sendError(id, -32601, `Method not found: ${request.method}`);
 }
 
-function main(): void {
+async function processAndSendResponse(
+  rpcResponse: JsonRpcResponse,
+  request: JsonRpcRequest
+): Promise<void> {
+  if (rpcResponse.result) {
+    const result = rpcResponse.result as { content?: Array<{ type: string; text: string }> };
+    if (result.content?.[0]?.type === 'text' && result.content[0].text) {
+      try {
+        const renderResult = JSON.parse(result.content[0].text) as RenderResult;
+        if (renderResult.imageUrl) {
+          const params = request.params as { arguments?: { code?: string } } | undefined;
+          const diagramCode = params?.arguments?.code;
+
+          const localPath = await saveImageLocally(renderResult.imageUrl, diagramCode);
+          if (localPath) {
+            renderResult.localPath = localPath;
+            result.content[0].text = JSON.stringify(renderResult);
+          }
+        }
+      } catch {
+        // If parsing fails, just return the original response
+      }
+    }
+  }
+
+  sendResponse(rpcResponse);
+}
+
+function runStdioServer(): void {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -274,11 +501,34 @@ function main(): void {
     process.exit(0);
   });
 
-  // Prevent unhandled promise rejections from crashing
   process.on('unhandledRejection', (error) => {
     const message = error instanceof Error ? error.message : 'Unknown error';
     sendError(null, -32000, `Unhandled error: ${message}`);
   });
 }
 
-main();
+async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+  const command = args[0];
+
+  switch (command) {
+    case 'login':
+      await performLogin();
+      break;
+    case 'logout':
+      logout();
+      break;
+    case 'whoami':
+      await whoami();
+      break;
+    default:
+      // Default: run as MCP stdio server
+      runStdioServer();
+      break;
+  }
+}
+
+main().catch((err) => {
+  console.error(`Fatal error: ${err.message}`);
+  process.exit(1);
+});

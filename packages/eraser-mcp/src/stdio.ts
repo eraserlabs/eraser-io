@@ -28,7 +28,6 @@
 import * as readline from 'readline';
 import * as fs from 'fs';
 import * as path from 'path';
-import { mcpTools } from './tools';
 import {
   ensureValidToken,
   invalidateCredentials,
@@ -87,14 +86,6 @@ const SERVER_INFO = {
 const SERVER_CAPABILITIES = {
   tools: {},
 };
-
-function getToolsList(): Array<{ name: string; description: string; inputSchema: unknown }> {
-  return mcpTools.map((tool) => ({
-    name: tool.name,
-    description: tool.description,
-    inputSchema: tool.jsonSchema,
-  }));
-}
 
 interface RenderResult {
   imageUrl?: string;
@@ -313,8 +304,7 @@ async function handleRequest(request: JsonRpcRequest): Promise<void> {
   }
 
   if (request.method === 'tools/list') {
-    // Proxy to the remote server so identity tools (whoami, listTeams, selectTeam)
-    // defined server-side are included in the response.
+    // Proxy to the remote server — the HTTP API is the source of truth for tool definitions.
     try {
       // If there was a previous init error, retry once before giving up.
       // This allows recovery from transient network failures.
@@ -337,14 +327,15 @@ async function handleRequest(request: JsonRpcRequest): Promise<void> {
         body: JSON.stringify(request),
       });
       if (!response.ok) {
-        // Fall back to local tool list if server is unreachable
-        sendResponse({ jsonrpc: '2.0', id, result: { tools: getToolsList() } });
+        // Server unreachable — return empty list with error
+        sendError(id, -32000, 'Unable to fetch tools from Eraser server');
         return;
       }
       const rpcResponse = (await response.json()) as JsonRpcResponse;
       sendResponse(rpcResponse);
-    } catch {
-      sendResponse({ jsonrpc: '2.0', id, result: { tools: getToolsList() } });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      sendError(id, -32000, `Unable to fetch tools: ${message}`);
     }
     return;
   }
